@@ -7,7 +7,6 @@ def cell_class():
     dict_temp = {
         'Tanycyte': 'Epithelial',
         'Ependymal': 'Epithelial',
-        'Oligodendrocyte': 'Glial',
         'Endothelial': 'Epithelial',
         'Microglia': 'Glial',
         'Astro NT': 'Glial',
@@ -16,19 +15,28 @@ def cell_class():
         'VLMC': 'Epithelial',
         'ABC' : 'Epithelial',
         'Astro TE': 'Glial',
-        'Astro NT': 'Glial',
         'Oligodendrocyte': 'Glial',
-        'Astro TE' : 'Glial',
-        'Pericyte' :'Epithelial',
-        'Ependymal' : 'Epithelial',           
-        'Endothelial'   : 'Epithelial',
-        'Tanycyte': 'Epithelial',      
-        'OPC' : 'Glial',
-        'VLMC': 'Epithelial',      
-        'Choroid' :
-        'Epithelial',
+        'Choroid' : 'Epithelial',
         }
     return dict_temp
+
+def sample_name_import(name_experiment):
+    
+    dict_exp_name = {
+        'SD1' : ["SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21",],
+        'all-samples' :["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2","3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
+        'circa' : ['circa2-ZT01','circa2-ZT05','circa2-ZT09','circa2-ZT13','circa2-ZT17','circa2-ZT21','circa4-IGM-ZT01',
+                   'circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21','circa4-Salk-ZT01',
+                   'circa4-Salk-ZT05','circa4-Salk-ZT09','circa4-Salk-ZT13','circa4-Salk-ZT17','circa4-Salk-ZT21'],
+        'circa-SD' : ['circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21'
+                   "SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21"],
+        
+        }
+    
+    samples = samples_ids = dict_exp_name[name_experiment]
+
+    return samples, samples_ids
+
 
 def genes_list(type_):
     
