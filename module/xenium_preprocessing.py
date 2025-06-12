@@ -42,29 +42,33 @@ def mmc_merge(adata, dir_notebook, name_dir):
     import glob
     dir_corr = f'{dir_notebook}/Correlation_Mapping/'
 
+    list_files = glob.glob(dir_corr + f'{name_dir}*')
 
-    for files in glob.glob(dir_corr + f'{name_dir}*'):
-        print(files)
-        if 'corr' not in locals():
-            corr = pd.read_csv(files, comment = '#')
-        else:
-            csv_temp = pd.read_csv(files, comment = '#')
-            corr = pd.concat([corr, csv_temp], ignore_index=True)
+    if len(list_files) != 0:
 
-    HC3_MMC = corr
-    HC3_MMC.index = HC3_MMC['cell_id']
-    HC3_MMC.index.name = None
-    HC3_MMC.columns = [f"mmc:{i}" for i in HC3_MMC.columns]
-    mmc_dict_class = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:class_name']))
-    mmc_dict_classcoef = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:class_correlation_coefficient']))
-    mmc_dict_subclass = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:subclass_name']))
-    mmc_dict_supertype = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:supertype_name']))
+        for files in list_files:
+            print(files)
+            if 'corr' not in locals():
+                corr = pd.read_csv(files, comment = '#')
+            else:
+                csv_temp = pd.read_csv(files, comment = '#')
+                corr = pd.concat([corr, csv_temp], ignore_index=True)
 
-    adata.obs['mmc:class_name'] = adata.obs['cell_id'].map(mmc_dict_class)
-    adata.obs['mmc:class_correlation_coefficient'] = adata.obs['cell_id'].map(mmc_dict_classcoef)
-    adata.obs['mmc:subclass_name'] = adata.obs['cell_id'].map(mmc_dict_subclass)
-    adata.obs['mmc:supertype_name'] = adata.obs['cell_id'].map(mmc_dict_supertype)
+        HC3_MMC = corr
+        HC3_MMC.index = HC3_MMC['cell_id']
+        HC3_MMC.index.name = None
+        HC3_MMC.columns = [f"mmc:{i}" for i in HC3_MMC.columns]
+        mmc_dict_class = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:class_name']))
+        mmc_dict_classcoef = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:class_correlation_coefficient']))
+        mmc_dict_subclass = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:subclass_name']))
+        mmc_dict_supertype = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:supertype_name']))
 
+        adata.obs['mmc:class_name'] = adata.obs['cell_id'].map(mmc_dict_class)
+        adata.obs['mmc:class_correlation_coefficient'] = adata.obs['cell_id'].map(mmc_dict_classcoef)
+        adata.obs['mmc:subclass_name'] = adata.obs['cell_id'].map(mmc_dict_subclass)
+        adata.obs['mmc:supertype_name'] = adata.obs['cell_id'].map(mmc_dict_supertype)
+    else:
+        print('Empty input. Please check the names of files in Correlation_Mapping folder')
     return adata
 
 
