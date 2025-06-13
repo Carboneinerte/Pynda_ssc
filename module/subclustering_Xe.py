@@ -5,6 +5,7 @@ from IPython.display import display
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pandas as pd
 from module.misc import cell_class
+from IPython.display import clear_output
 
 
 ### Automatic initial annotation
