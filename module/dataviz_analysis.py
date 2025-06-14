@@ -13,7 +13,9 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-def umap_plot_indi_multi(adata_to_plot, cluster_to_use = 'cell_type_newnum_final', individual_plot = True, save_plot = False, cmap_ = 'hls', name_dir = name_dir, dir_notebook = dir_notebook):
+def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final',
+                          individual_plot = True, save_plot = False, cmap_ = 'hls',
+                            ):
 
 
     adata_to_plot.obsm['umap'] = adata_to_plot.obsm['reduced_pc_20_umap']
@@ -52,7 +54,7 @@ def umap_plot_indi_multi(adata_to_plot, cluster_to_use = 'cell_type_newnum_final
         plt.show()
         
         if save_plot == True:
-            plt.savefig(f"plot/{name_dir}/{name_dir}_UMAP_{cluster_to_use}.png")
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_{cluster_to_use}.png")
         
     ####
     else:
@@ -83,10 +85,11 @@ def umap_plot_indi_multi(adata_to_plot, cluster_to_use = 'cell_type_newnum_final
         plt.legend(markerscale=20, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
         
         if save_plot == True:
-            plt.savefig(f"plot/{name_dir}/{name_dir}_UMAP_all.png")
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png")
     
 
-def cluster_plot(adata_to_plot, cluster_to_use = 'cell_type_newnum_final', cluster_to_map = 'all', cmap_ = 'tab20b', save_plot = False, name_dir = name_dir, dir_notebook = dir_notebook):
+def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final', cluster_to_map = 'all',
+                 cmap_ = 'tab20b', save_plot = False):
 
     label_to_use = cluster_to_use
     test_dict = {
@@ -154,7 +157,8 @@ def cluster_plot(adata_to_plot, cluster_to_use = 'cell_type_newnum_final', clust
             plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png")
 
 
-def polygonplot_dataprep(adata_main, sample_to_plot, cluster_to_use = 'cell_type_newnum_final', cmap_ = 'tab20b'):
+def polygonplot_dataprep(adata_main, sample_to_plot, cluster_to_use = 'cell_type_newnum_final',
+                          cmap_ = 'tab20b'):
 
     ### Generate a color palette for the clusters - to make color stay consistent across samples
     num_clusters = len(adata_main.obs[cluster_to_use].astype(int).unique())
@@ -208,7 +212,8 @@ def polygonplot_dataprep(adata_main, sample_to_plot, cluster_to_use = 'cell_type
 
 
 
-def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None, region_only = None, coord_ = None, save_plot = False):
+def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None, region_only = None,
+                      coord_ = None, save_plot = False):
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
@@ -315,7 +320,8 @@ def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None
 
 
 
-def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, region_only = None, coord_ = None, cmap_ = 'inferno', save_plot = False):
+def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, region_only = None,
+                               coord_ = None, cmap_ = 'inferno', save_plot = False):
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
