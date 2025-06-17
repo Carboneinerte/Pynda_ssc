@@ -1,5 +1,5 @@
 def list_annotations():
-    list_anno = ["sample","ZT", "Genotype", "run", "cell_type_final", "region_automap_name", "cell_class",]
+    list_anno = ["sample","ZT", "Genotype", "run", "cell_type_final", "region_automap_name", "cell_class","circascore"]
     return list_anno
 
 def cell_class():
