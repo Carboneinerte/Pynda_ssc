@@ -28,7 +28,7 @@ sudoreplicates = 3
 siglist <- list()
 clocklist = list()
 path_to_save = paste0("./Results/",date,"_",run_name,"_",condition_string)
-dir.create(path_to_save)
+dir.create(path_to_save, recursive = TRUE)
 dir.create(paste0(path_to_save,"/Raw"))
 dir.create(paste0(path_to_save,"/Summary"))
 
@@ -47,12 +47,23 @@ if ("region" %in% condition){
   regions = GetValidRegions(run_name)
 }
 
+use_gene_lists <- TRUE
+gene_list_directory <- "/media/volume/volume_spatial/tiffany/250618/data/gene_list_circa4"
+
 ```
 
 Run MetaCycle for all conditions
 
 ```{r}
-MetaCycleAnalysis(data, condition, run_name, path_to_save, date)
+MetaCycleAnalysis(
+  data = data, 
+  condition = condition, 
+  run_name = run_name, 
+  path_to_save = path_to_save, 
+  date = date,
+  use_gene_lists = use_gene_lists,
+  gene_list_path = gene_list_directory
+)
 
 ```
 
