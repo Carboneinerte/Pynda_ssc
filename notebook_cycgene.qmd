@@ -8,36 +8,25 @@ Authors: HC, TC, YS
 
 
 ```{r}
-if(!require(tidyr)){install.packages("dplyr")}
-if(!require(MetaCycle)){install.packages("MetaCycle")}
-if(!require(arrow)){install.packages("arrow")}
+library(dplyr)
+library(arrow)
+library(MetaCycle)
 ```
 
 
 ```{r}
-
-
-setwd = '/media/volume/volume_spatial/hugo/R/'
-
 source("ref_function.R")
 
 date = Sys.Date()
-run_name = "SD1"
-condition = c("celltype","region")
+run_name = "circa4"
+condition = c("celltype", "region")
+condition_string <- paste(condition, collapse = "_and_")
 circascore = "all"
 sudoreplicates = 3
 
-siglist = list()
+siglist <- list()
 clocklist = list()
-
-path_to_data = paste0('./data/',run_name,'_norm_combined.parquet')
-if (length(condition) == 2) {
-  path_to_save = paste0("./Results/",date,"_",run_name,"_",condition[1],condition[2])
-} else {
-    path_to_save = paste0("./Results/",date,"_",run_name,"_",condition)
-    }
-
-
+path_to_save = paste0("./Results/",date,"_",run_name,"_",condition_string)
 dir.create(path_to_save)
 dir.create(paste0(path_to_save,"/Raw"))
 dir.create(paste0(path_to_save,"/Summary"))
@@ -47,7 +36,7 @@ dir.create(paste0(path_to_save,"/Summary"))
 Data import and pre-processing
 ```{r}
 
-data = PreProcessingData(run_name, path_to_data, circascore)
+data = PreProcessingData(run_name, circascore)
 
 if ("celltype" %in% condition){
   celltypes = GetValidCells(run_name)
@@ -62,18 +51,7 @@ if ("region" %in% condition){
 Run MetaCycle for all conditions
 
 ```{r}
-if ("celltype" %in% condition & "region" %in% condition){
-  print("WIP")
-} else if ("celltype" %in% condition){
-  MetaCycleCelltype(data, condition)
-} else if ("region" %in% condition){
-MetaCycleRegion(data, condition)
-} else {print("condition not recognized")}
-```
-
-
-
-```{r}
-
+MetaCycleAnalysis(data, condition, run_name, path_to_save, date)
 
 ```
+
