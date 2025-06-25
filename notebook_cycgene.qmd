@@ -15,8 +15,9 @@ library(MetaCycle)
 
 
 ```{r}
-source("ref_function.R")
+source("/media/volume/volume_spatial/tiffany/Xenium-workflow/ref_function.R")
 
+setwd("/media/volume/volume_spatial/tiffany/250618")
 date = Sys.Date()
 run_name = "circa4"
 condition = c("celltype", "region")
