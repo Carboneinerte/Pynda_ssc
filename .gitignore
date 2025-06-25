@@ -3,6 +3,5 @@ data/
 Archive/
 __pycache__/
 .Rproj.user
-*.R*
 *_test.ipynb
 csv/
