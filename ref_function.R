@@ -8,7 +8,7 @@ library(MetaCycle)
 
 PreProcessingData = function(run_name, circascore='all'){
   print("Start importing data")
-  path_to_data = paste0('./data/',run_name,'_norm_combined.parquet')
+  path_to_data = paste0('/media/volume/volume_spatial/hugo/R/data/',run_name,'_norm_combined.parquet')
   data=read_parquet(path_to_data)
   
   data = CircaFilter(data, run_name, circascore)
@@ -112,6 +112,7 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
   }
   
   siglist <- list()
+  siglistBH <- list()
   
   for (item in items_to_process) {
     message("Processing group: ", item)
@@ -120,13 +121,20 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
     
     genes_to_analyze <- NULL
     if (use_gene_lists) {
-      gene_file <- file.path(gene_list_path, paste0(item, ".txt"))
+      gene_file <- "" 
+      
+      if(analysis_by == "combined_group") {
+        celltype_for_list <- sub("_in_.*", "", item)
+        region_for_list <- sub(".*_in_", "", item)
+        gene_file <- file.path(gene_list_path, region_for_list, paste0(celltype_for_list, ".txt"))
+      } else {
+        gene_file <- file.path(gene_list_path, paste0(item, ".txt"))
+      }
       
       if (file.exists(gene_file)) {
         message("  Found gene list. Reading and cleaning...")
         genes_raw <- readLines(gene_file)
         
-        # --- FIX: Clean the gene names read from the file ---
         genes_to_analyze <- gsub('\\"', '', genes_raw)
         genes_to_analyze <- gsub('^\\d+\\s+', '', genes_to_analyze)
         genes_to_analyze <- trimws(genes_to_analyze)
@@ -140,12 +148,12 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
         }
         
         message("  Found ", length(matching_genes), " matching genes to analyze.")
-        meta_cols <- names(data1)[!grepl("^[A-Z]", names(data1))] # Heuristic: metadata is not capitalized
+        meta_cols <- names(data1)[!grepl("^[A-Z]", names(data1))] 
         cols_to_keep <- c(meta_cols, matching_genes)
         data1 <- data1[, cols_to_keep]
         
       } else {
-        message("  WARNING: Gene list file not found for '", item, "'. Skipping this item.")
+        message("  WARNING: Gene list file not found for '", item, "'. Path checked: ", gene_file)
         next 
       }
     }
@@ -190,27 +198,45 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
         d <- meta2d(infile = paste0(outfile_prefix, "_data.csv"), outdir = path_to_save,
                     filestyle = "csv", timepoints = timepointstolookat, minper = 20, 
                     maxper = 28, cycMethod = method_to_use, outputFile = FALSE)
-        sigcyclegene <- if ("meta2d_pvalue" %in% names(d$meta)) d$meta %>% filter(meta2d_pvalue < 0.05) else d$meta %>% filter(LS_pvalue < 0.05)
+        
+        if("meta2d_pvalue" %in% names(d$meta)) {
+          d$meta$meta2d_pvalue <- as.numeric(d$meta$meta2d_pvalue)
+          sigcyclegene <- d$meta %>% filter(meta2d_pvalue < 0.05)
+          d$meta$meta2d_BH.Q <- as.numeric(d$meta$meta2d_BH.Q)
+          sigcyclegeneBH <- d$meta %>% filter(meta2d_BH.Q < 0.05)
+        } else {
+          d$meta$LS_pvalue <- as.numeric(d$meta$LS_pvalue)
+          sigcyclegene <- d$meta %>% filter(LS_pvalue < 0.05)
+        }
+
         dftosd <- as.data.frame(t(do.call(rbind, datasdlist)))[-1, ]; dftosd$gene <- rownames(dftosd) 
         tdftoexport$gene <- rownames(tdftoexport); d[["averagesheet"]] <- tdftoexport; d[["sdsheet"]] <- dftosd
         d[["sig_cyl_gene"]] <- sigcyclegene
         writexl::write_xlsx(Filter(Negate(is.null), d), paste0(outfile_prefix, "_cyc_analysis.xlsx"))
         if(nrow(sigcyclegene) > 0) { siglist[[item]] <- sigcyclegene }
+        if(nrow(sigcyclegeneBH) > 0) { siglistBH[[item]] <- sigcyclegeneBH }
       }
     }, error = function(e) { message("  Skipping '", item, "' due to an error: ", e$message) })
   }
   
   if(length(siglist) > 0) {
     message("\nAnalysis complete. Writing summary files...")
-    writexl::write_xlsx(siglist, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cyc_siggene_by_", analysis_by, ".xlsx"))
+    writexl::write_xlsx(siglist, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cyc_siggene_analysis.xlsx"))
+    writexl::write_xlsx(siglistBH, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cyc_siggeneBH_analysis.xlsx"))
+    
     summary_df <- data.frame(group = names(siglist), cycling_gene_count = sapply(siglist, nrow))
     names(summary_df)[1] <- analysis_by
-    write.csv(summary_df, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cycling_gene_count_by_", analysis_by, ".csv"), row.names = FALSE)
+    write.csv(summary_df, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cycling_gene_per_group.csv"), row.names = FALSE)
+    
+    summary_df_BH <- data.frame(group = names(siglistBH), cycling_gene_count = sapply(siglist, nrow))
+    names(summary_df_BH)[1] <- analysis_by
+    write.csv(summary_df_BH, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cycling_gene_per_group.csv"), row.names = FALSE)
+    
     all_cycling_genes <- do.call(rbind, lapply(names(siglist), function(name) data.frame(gene=siglist[[name]]$CycID, item_name=name)))
     if (!is.null(all_cycling_genes) && nrow(all_cycling_genes) > 0) {
       gene_item_counts <- all_cycling_genes %>% group_by(gene) %>% summarize(group_count = n(), groups = paste(item_name, collapse = " | ")) %>% arrange(desc(group_count))
       names(gene_item_counts) <- c("gene", paste0(analysis_by, "_count"), paste0(analysis_by, "s"))
-      write.csv(gene_item_counts, paste0(path_to_save, "/Summary/", date, "_", run_name, "_groups_per_cycling_gene.csv"), row.names = FALSE)
+      write.csv(gene_item_counts, paste0(path_to_save, "/Summary/", date, "_", run_name, "_group_per_cycling_gene.csv"), row.names = FALSE)
     }
     message("...Summary files written successfully.\n")
   } else { message("No significant cycling genes found.") }

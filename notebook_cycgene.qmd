@@ -11,23 +11,26 @@ Authors: HC, TC, YS
 library(dplyr)
 library(arrow)
 library(MetaCycle)
+library(knitr)
 ```
 
 
 ```{r}
-source("/media/volume/volume_spatial/tiffany/Xenium-workflow/ref_function.R")
+source("ref_function.R")
 
-setwd("/media/volume/volume_spatial/tiffany/250618")
 date = Sys.Date()
-run_name = "circa4"
-condition = c("celltype", "region")
+run_name = "SD1"
+condition = c("celltype")
 condition_string <- paste(condition, collapse = "_and_")
 circascore = "all"
 sudoreplicates = 3
 
 siglist <- list()
+seiglistBH = list()
 clocklist = list()
-path_to_save = paste0("./Results/",date,"_",run_name,"_",condition_string)
+
+path_to_save = paste0("/media/volume/volume_spatial/hugo/R/Results/",date,"_",run_name,"_",condition_string)
+
 dir.create(path_to_save, recursive = TRUE)
 dir.create(paste0(path_to_save,"/Raw"))
 dir.create(paste0(path_to_save,"/Summary"))
@@ -36,7 +39,7 @@ dir.create(paste0(path_to_save,"/Summary"))
 
 Data import and pre-processing
 ```{r}
-
+setwd('/media/volume/volume_spatial/hugo/R/')
 data = PreProcessingData(run_name, circascore)
 
 if ("celltype" %in% condition){
@@ -48,7 +51,7 @@ if ("region" %in% condition){
 }
 
 use_gene_lists <- TRUE
-gene_list_directory <- "/media/volume/volume_spatial/tiffany/250618/data/gene_list_circa4"
+gene_list_directory <- paste0("/media/volume/volume_spatial/tiffany/250618/data/gene_list_",run_name)
 
 ```
 
@@ -64,6 +67,5 @@ MetaCycleAnalysis(
   use_gene_lists = use_gene_lists,
   gene_list_path = gene_list_directory
 )
-
 ```
 
