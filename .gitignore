@@ -6,3 +6,4 @@ __pycache__/
 *_test.ipynb
 csv/
 gene2go
+go-basic.obo
