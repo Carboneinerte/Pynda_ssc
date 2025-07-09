@@ -5,3 +5,4 @@ __pycache__/
 .Rproj.user
 *_test.ipynb
 csv/
+gene2go
