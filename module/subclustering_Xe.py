@@ -4,8 +4,10 @@ import scanpy as sc
 from IPython.display import display
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import pandas as pd
+import numpy as np
 from module.misc import cell_class
 from IPython.display import clear_output
+
 
 
 ### Automatic initial annotation
@@ -165,24 +167,10 @@ def circascore_annot(adata, df):
     '''
     Create annotation based on the expression of clock genes in each cells
     '''
-    bar = progressbar.ProgressBar(maxval=len(df), \
-        widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
-    bar.start()
-    tracker_=0
-
     df['circascore']=0
-
     clock_genes = genes_list('clock')
-
-    for n in range(0, len(df)):
-        count_ = 0
-        for g in clock_genes:
-            count_ +=1
-            if df[g][n] > 0:
-                df['circascore'][n] += 1
-        tracker_ +=1
-        bar.update(tracker_)
-
+    df = df.filter(clock_genes, axis = 1)
+    df['circascore'] = df.select_dtypes(np.number).gt(0.01).sum(axis=1)
     df['cell_id'] = df.index
     score_dict = dict(zip(df['cell_id'], df['circascore']))
     adata.obs['circascore'] = df['cell_id'].map(score_dict)
