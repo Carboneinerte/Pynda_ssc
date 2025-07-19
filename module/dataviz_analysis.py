@@ -32,7 +32,7 @@ def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = '
     if individual_plot == True:
         ## Draw UMAP
         b = int(adata_to_plot.obs['sample'].nunique() / 2)
-        fig, axs = plt.subplots(b,2,
+        _, axs = plt.subplots(b,2,
                                 figsize=(15,25)
     
                                 )
