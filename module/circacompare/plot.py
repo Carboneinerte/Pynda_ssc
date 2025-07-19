@@ -12,7 +12,7 @@ def circa_single_plot(t0, y0, loss=constants.LOSS, f_scale=constants.F_SCALE, ma
     optimised_result = circa_single(t0,y0, loss, f_scale, max_iterations)
     predictions = predict_y(optimised_result.x, t=t0)
 
-    plt.plot(t0, y0, label="data", color='blue')
+    plt.scatter(t0, y0, label="data", color='blue')
     plt.plot(t0, predictions, label="fit", color='red')
     plt.legend(loc="lower right")
     plt.show()
