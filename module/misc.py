@@ -8,9 +8,9 @@ def list_annotations():
 def cell_class():
 
     dict_temp = {
-        'Tanycyte': 'Epithelial',
-        'Ependymal': 'Epithelial',
-        'Endothelial': 'Epithelial',
+        'Tanycyte': 'Ependymal',
+        'Ependymal': 'Ependymal',
+        'Endothelial': 'Vascular',
         'Microglia': 'Glial',
         'Astro NT': 'Glial',
         'OPC': 'Glial',
@@ -19,7 +19,8 @@ def cell_class():
         'ABC' : 'Epithelial',
         'Astro TE': 'Glial',
         'Oligodendrocyte': 'Glial',
-        'Choroid' : 'Epithelial',
+        'Choroid' : 'Ependymal',
+        'SMC' : 'Vascular'
         }
     return dict_temp
 
