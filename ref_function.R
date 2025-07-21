@@ -1,6 +1,3 @@
-# run_ = 'circa4'
-# circascore = 'all' 
-
 ### Preprocessing_data
 library(dplyr)
 library(arrow)
@@ -35,12 +32,12 @@ CircaFilter = function(data, run_name,circascore){
 ### Valid cells
 GetValidCells <- function(run_name){
   if (run_name == 'circa4'){
-    valid_cells <- c("ABC","Astro TE","Choroid","CLA EPd CTX Glut","COAa PAA MEA Glut","DG Glut","Endothelial",
-                     "Ependymal","HY Glut","L2 3 IT PIR ENTl Glut","L2 3 PIR ENTl Glut","L4 5 IT CTX Glut",
-                     "L5 ET CTX Glut","L5 NP CTX Glut","L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut",
-                     "Lamp5 Gaba","Microglia","OB STR CTX IMN","Oligodendrocyte","OPC","PAL STR Gaba Chol",
-                     "Pericyte","Pvalb Gaba","PVT PT Glut","SCH Gaba","SMC","Sncg Gaba","Sst Gaba","STR D1 Gaba",
-                     "STR D2 Gaba","STR Gaba","STR PAL Gaba","Vip Gaba","VLMC"
+    valid_cells <- c("ABC","AHN Glut","Astro TE","CLA EPd CTX Glut","COAa PAA MEA Glut","Choroid","DG Glut",                     "Endothelial","Ependymal",
+                     "L2 3 IT PIR ENTl Glut","L2 3 PIR ENTl Glut","L4 5 IT CTX Glut","L5 ET CTX Glut","L5 NP CTX Glut",
+                     "L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut","LHA Glut","Lamp5 Gaba","MEA Glut","Microglia","OB STR CTX IMN","OPC",
+                     "Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","PVT Glut","Pericyte","Pvalb Gaba","SCH Gaba",                     "SMC",                     "SPA Glut",
+                     "STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba",
+                     "Sst Gaba","VLMC","Vip Gaba"
     )}
   else if (run_name == 'SD1'){
     valid_cells <- c('ABC','Astro TE','Choroid','CLA EPd CTX Glut','COAa PAA MEA Glut','DG Glut','Endothelial',
@@ -69,8 +66,7 @@ GetValidRegions = function(run_name){
 }
 
 ### Clock genes
-clockgenelist = c("Arntl","Clock", "Cry1","Cry2", "Npas2","Nr1d1", "Per1",  "Per2", "Per3", "Rora", "Rorb",
-                  "Rorc", "Dbp", "Nfil3", "Hlf", "Ciart")
+clockgenelist = c("Arntl","Clock", "Cry1","Cry2", "Npas2","Nr1d1", "Per1",  "Per2", "Per3", "Rora", "Rorb","Rorc")
 
 
 MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date, 
@@ -126,19 +122,20 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
       if(analysis_by == "combined_group") {
         celltype_for_list <- sub("_in_.*", "", item)
         region_for_list <- sub(".*_in_", "", item)
-        gene_file <- file.path(gene_list_path, region_for_list, paste0(celltype_for_list, ".txt"))
+        gene_file <- file.path(gene_list_path, region_for_list, paste0(celltype_for_list, ".csv"))
       } else {
-        gene_file <- file.path(gene_list_path, paste0(item, ".txt"))
+        gene_file <- file.path(gene_list_path, paste0(item, ".csv"))
       }
       
       if (file.exists(gene_file)) {
         message("  Found gene list. Reading and cleaning...")
-        genes_raw <- readLines(gene_file)
+        genes_raw <- read_csv(gene_file)
         
-        genes_to_analyze <- gsub('\\"', '', genes_raw)
-        genes_to_analyze <- gsub('^\\d+\\s+', '', genes_to_analyze)
-        genes_to_analyze <- trimws(genes_to_analyze)
-        genes_to_analyze <- genes_to_analyze[genes_to_analyze != "x" & nchar(genes_to_analyze) > 0]
+        genes_to_analyze = genes_raw$`0`
+        # genes_to_analyze <- gsub('\\"', '', genes_raw)
+        # genes_to_analyze <- gsub('^\\d+\\s+', '', genes_to_analyze)
+        # genes_to_analyze <- trimws(genes_to_analyze)
+        # genes_to_analyze <- genes_to_analyze[genes_to_analyze != "x" & nchar(genes_to_analyze) > 0]
         
         matching_genes <- intersect(genes_to_analyze, names(data1))
         
