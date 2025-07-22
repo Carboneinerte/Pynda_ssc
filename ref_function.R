@@ -147,8 +147,8 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
         }
         
         message("  Found ", length(matching_genes), " matching genes to analyze.")
-        meta_cols <- names(data1)[!grepl("^[A-Z]", names(data1))] 
-        cols_to_keep <- c(meta_cols, matching_genes)
+        meta_cols <- names(data1)[!names(data1) %in% matching_genes]
+        cols_to_keep <- unique(c(meta_cols, matching_genes))
         data1 <- data1[, cols_to_keep]
         
       } else {
