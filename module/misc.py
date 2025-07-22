@@ -1,7 +1,7 @@
 def list_annotations():
     list_anno = [
         "sample","ZT", "Genotype", "run", "cell_type_final", "region_automap_name",
-        "cell_class","circascore","x_centroid","y_centroid", "Sex"
+        "cell_class","circascore","x_centroid","y_centroid", "Sex", 'Neurotransmitter'
                  ]
     return list_anno
 
@@ -14,9 +14,9 @@ def cell_class():
         'Microglia': 'Glial',
         'Astro NT': 'Glial',
         'OPC': 'Glial',
-        'Pericyte': 'Epithelial',
-        'VLMC': 'Epithelial',
-        'ABC' : 'Epithelial',
+        'Pericyte': 'Vascular',
+        'VLMC': 'Vascular',
+        'ABC' : 'Vascular',
         'Astro TE': 'Glial',
         'Oligodendrocyte': 'Glial',
         'Choroid' : 'Ependymal',
