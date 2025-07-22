@@ -32,20 +32,20 @@ CircaFilter = function(data, run_name,circascore){
 ### Valid cells
 GetValidCells <- function(run_name){
   if (run_name == 'circa4'){
-    valid_cells <- c("ABC","AHN Glut","Astro TE","CLA EPd CTX Glut","COAa PAA MEA Glut","Choroid","DG Glut",                     "Endothelial","Ependymal",
+    valid_cells <- c(
+      "ABC","AHN Glut","Astro TE","CLA EPd CTX Glut","COAa PAA MEA Glut","Choroid","DG Glut","Endothelial","Ependymal",
                      "L2 3 IT PIR ENTl Glut","L2 3 PIR ENTl Glut","L4 5 IT CTX Glut","L5 ET CTX Glut","L5 NP CTX Glut",
                      "L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut","LHA Glut","Lamp5 Gaba","MEA Glut","Microglia","OB STR CTX IMN","OPC",
-                     "Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","PVT Glut","Pericyte","Pvalb Gaba","SCH Gaba",                     "SMC",                     "SPA Glut",
-                     "STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba",
-                     "Sst Gaba","VLMC","Vip Gaba"
+                     "Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","PVT Glut","Pericyte","Pvalb Gaba","SCH Gaba","SMC","SPA Glut",
+                     "STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba","Sst Gaba",
+      "VLMC","Vip Gaba"
     )}
   else if (run_name == 'SD1'){
-    valid_cells <- c('ABC','Astro TE','Choroid','CLA EPd CTX Glut','COAa PAA MEA Glut','DG Glut','Endothelial',
-                     'Ependymal','HY Glut','L2 3 IT PIR ENTl Glut','L2 3 PIR ENTl Glut','L4 5 IT CTX Glut',
-                     'L5 ET CTX Glut','L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut',
-                     'Lamp5 Gaba','Microglia','OB STR CTX IMN','Oligodendrocyte','OPC','PAL STR Gaba Chol',
-                     'Pericyte','Pvalb Gaba','SCH Gaba','SMC','Sncg Gaba','Sst Gaba','STR D1 Gaba','STR D2 Gaba',
-                     'STR Gaba','STR PAL Gaba','Vip Gaba','VLMC'
+    valid_cells <- c('ABC','AHN Glut','Astro TE','COAa PAA MEA Glut','DG Glut','Endothelial','Ependymal','L2 3 IT PIR ENTl Glut','L2 3 PIR ENTl Glut',
+                     'L4 5 IT CTX Glut','L5 ET CTX Glut','L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut','LHA Glut','Lamp5 Gaba','MEA Glut','Microglia',
+                     'OB STR CTX IMN','OPC','Oligodendrocyte','PAL STR Gaba Chol','PVH Glut','Pericyte','Pvalb Gaba','SCH Gaba','SMC','STR D1 Gaba','STR D2 Gaba',
+                     'STR Gaba','STR PAL Gaba','Sncg Gaba','Sst Gaba','VLMC','Vip Gaba'
+                     
     )}
   print('Valid celltypes names: Loaded')
   return (valid_cells)
@@ -56,10 +56,12 @@ GetValidCells <- function(run_name){
 ### Valid Regions
 GetValidRegions = function(run_name){
   if (run_name == 'circa4'){
-    valid_regions = c("CTX","Ependymal","HIPP","HY","PVT","SCH","STR","VLMC","WM")
+    valid_regions = c("AHN","AMY","CTX","LHA","PVH","PVT","SCH","STR")
   }
   else if(run_name == 'SD1'){
-    valid_regions = c("CTX","Ependymal","HIPP","HY","SCH","STR","VLMC","WM")
+    valid_regions = c(
+                      "AHN","AMY","CTX","LHA","PVH","SCH","STR"
+    )
   }
   print('Valid region names: Loaded')
   return (valid_regions)
@@ -129,9 +131,9 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
       
       if (file.exists(gene_file)) {
         message("  Found gene list. Reading and cleaning...")
-        genes_raw <- read_csv(gene_file)
-        
-        genes_to_analyze = genes_raw$`0`
+        genes_raw <- read_csv(gene_file, col_names = FALSE, col_types = c('c','c'))
+        genes_raw = na.omit(genes_raw)
+        genes_to_analyze = genes_raw$X2
         # genes_to_analyze <- gsub('\\"', '', genes_raw)
         # genes_to_analyze <- gsub('^\\d+\\s+', '', genes_to_analyze)
         # genes_to_analyze <- trimws(genes_to_analyze)
