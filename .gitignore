@@ -5,6 +5,6 @@ __pycache__/
 .Rproj.user
 *_test.ipynb
 csv/
-gene2go
+gene2go.gz
 go-basic.obo
 figures/
