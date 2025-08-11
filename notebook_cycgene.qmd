@@ -10,6 +10,7 @@ Authors: HC, TC, YS
 ```{r}
 library(dplyr)
 library(arrow)
+library(readr)
 library(MetaCycle)
 library(knitr)
 ```
@@ -29,7 +30,7 @@ siglist <- list()
 siglistBH = list()
 clocklist = list()
 
-path_to_save = paste0("./Results/",date,"_",run_name,"_",condition_string)
+path_to_save = paste0("../R/Results/",date,"_",run_name,"_",condition_string)
 
 dir.create(path_to_save, recursive = TRUE)
 dir.create(paste0(path_to_save,"/Raw"))
@@ -39,27 +40,11 @@ dir.create(paste0(path_to_save,"/Summary"))
 
 Data import and pre-processing
 ```{r}
-setwd('/media/volume/volume_spatial/tiffany/250618/')
+setwd('/media/volume/volume_spatial/hugo/R/')
 data = PreProcessingData(run_name, circascore)
 
-#if ("celltype" %in% condition){
-#  celltype = GetValidCells(run_name)
-#}
-
-#if ("region" %in% condition){
-#  region = GetValidRegions(run_name)
-#}
-
-#if ("class" %in% condition){
-#  class = GetValidCellClass(run_name)
-#}
-
-#if ("neurotransmitter" %in% condition){
-#  neurotransmitter = GetValidNeurotransmitter(run_name)
-#}
-
 use_gene_lists <- TRUE
-gene_list_directory <- paste0("/media/volume/volume_spatial/tiffany/250618/data/gene_list_",run_name)
+gene_list_directory <- paste0("/media/volume/volume_spatial/hugo/R/data/gene_list_",run_name)
 
 ```
 

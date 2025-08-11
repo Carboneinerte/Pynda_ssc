@@ -2,6 +2,8 @@
 library(dplyr)
 library(arrow)
 library(MetaCycle)
+library(readr)
+library(knitr)
 
 PreProcessingData = function(run_name, circascore='all'){
   print("Start importing data")
@@ -32,18 +34,19 @@ CircaFilter = function(data, run_name,circascore){
 ### Valid cells
 GetValidCells <- function(run_name){
   if (run_name == 'circa4'){
-    valid_cells <- c("ABC","AHN Glut","Astro TE","CLA EPd CTX Glut","COAa PAA MEA Glut","Choroid","DG Glut","Endothelial","Ependymal",
-                     "L2 3 IT PIR ENTl Glut","L2 3 PIR ENTl Glut","L4 5 IT CTX Glut","L5 ET CTX Glut","L5 NP CTX Glut",
-                     "L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut","LHA Glut","Lamp5 Gaba","MEA Glut","Microglia","OB STR CTX IMN","OPC",
-                     "Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","PVT Glut","Pericyte","Pvalb Gaba","SCH Gaba","SMC","SPA Glut",
-                     "STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba","Sst Gaba", "VLMC","Vip Gaba"
-    )}
+    valid_cells <- c('ABC','AHN Glut','Astro TE','CEA Gaba','CLA EPd CTX Glut','COAa PAA MEA Glut','Choroid',
+'Endothelial','Ependymal','L2 3 IT PIR ENTl Glut','L4 5 IT CTX Glut','L5 ET CTX Glut',
+'L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut','LHA Glut','Lamp5 Gaba',
+'MEA Glut','Microglia','OB STR CTX IMN','OPC','Oligodendrocyte','PAL STR Gaba Chol','PVH Glut','PVT Glut','Pericyte','Pvalb Gaba','SCH Gaba','SMC','STR D1 Gaba','STR D2 Gaba','STR Gaba','STR PAL Gaba','Sncg Gaba','Sst Gaba','VLMC','Vip Gaba'
+)}
   else if (run_name == 'SD1'){
-    valid_cells <- c('ABC','AHN Glut','Astro TE','COAa PAA MEA Glut','DG Glut','Endothelial','Ependymal','L2 3 IT PIR ENTl Glut','L2 3 PIR ENTl Glut',
-                     'L4 5 IT CTX Glut','L5 ET CTX Glut','L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut','LHA Glut','Lamp5 Gaba','MEA Glut','Microglia',
-                     'OB STR CTX IMN','OPC','Oligodendrocyte','PAL STR Gaba Chol','PVH Glut','Pericyte','Pvalb Gaba','SCH Gaba','SMC','STR D1 Gaba','STR D2 Gaba',
-                     'STR Gaba','STR PAL Gaba','Sncg Gaba','Sst Gaba','VLMC','Vip Gaba'
-    )}
+    valid_cells <- c("ABC","AHN Glut","Astro TE","CEA Gaba","CLA EPd CTX Glut","COAa PAA MEA Glut",
+"Choroid","Endothelial","Ependymal","L2 3 IT PIR ENTl Glut","L4 5 IT CTX Glut",
+"L5 ET CTX Glut","L5 NP CTX Glut","L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut",
+"LHA Glut","Lamp5 Gaba","MEA Glut","MPO Glut","Microglia","OB STR CTX IMN","OPC",
+"Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","Pericyte","Pvalb Gaba","SCH Gaba",
+"SMC","SPA Glut","STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba",
+"Sst Gaba","VLMC","Vip Gaba")}
   print('Valid celltypes names: Loaded')
   return (valid_cells)
 }
@@ -53,12 +56,10 @@ GetValidCells <- function(run_name){
 ### Valid Regions
 GetValidRegions = function(run_name){
   if (run_name == 'circa4'){
-    valid_regions = c("AHN","AMY","CTX","LHA","PVH","PVT","SCH","STR")
+    valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "PVT", "SCH", "STR", "WM")
   }
   else if(run_name == 'SD1'){
-    valid_regions = c(
-                      "AHN","AMY","CTX","LHA","PVH","SCH","STR"
-    )
+    valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "SCH", "STR")
   }
   print('Valid region names: Loaded')
   return (valid_regions)
@@ -67,9 +68,9 @@ GetValidRegions = function(run_name){
 ### Valid Cell Classes
 GetValidCellClasses <- function(run_name){
   if (run_name == 'circa4'){
-    valid_classes <- c("Glial", "Neuronal", "Epithelial") 
+    valid_classes <- c("Glial", "Neuronal", "Vascular","Ependymal") 
   } else if (run_name == 'SD1'){
-    valid_classes <- c("Glial", "Neuronal", "Epithelial")
+    valid_classes <- c("Glial", "Neuronal", "Vascular","Ependymal")
   }
   print('Valid cell class names: Loaded')
   return (valid_classes)
@@ -78,9 +79,9 @@ GetValidCellClasses <- function(run_name){
 ### Valid Neurotransmitters
 GetValidNeurotransmitters <- function(run_name){
   if (run_name == 'circa4'){
-    valid_neurotransmitters <- c("Glial", "Neuronal", "Epithelial") 
+    valid_neurotransmitters <- c("Glutamate", "Gaba", "Acetylcholine") 
   } else if (run_name == 'SD1'){
-    valid_neurotransmitters <- c("Glial", "Neuronal", "Epithelial")
+    valid_neurotransmitters <- c("Glutamate", "Gaba", "Acetylcholine")
   }
   print('Valid neurotransmitter names: Loaded')
   return (valid_neurotransmitters)
@@ -238,7 +239,8 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
         method_to_use <- if (length(timepointstolookat) >= 18) c("LS", "JTK") else "LS"
         d <- meta2d(infile = paste0(outfile_prefix, "_data.csv"), outdir = path_to_save,
                     filestyle = "csv", timepoints = timepointstolookat, minper = 20, 
-                    maxper = 28, cycMethod = method_to_use, outputFile = FALSE)
+                    maxper = 28, cycMethod = method_to_use, outputFile = FALSE,
+                    parallelize = FALSE, nCores = 40)
         
         if("meta2d_pvalue" %in% names(d$meta)) {
           d$meta$meta2d_pvalue <- as.numeric(d$meta$meta2d_pvalue)
