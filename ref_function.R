@@ -6,7 +6,7 @@ library(readr)
 library(knitr)
 
 PreProcessingData = function(run_name, circascore='all'){
-  print("Start importing data")
+  log_print("Start importing data")
   path_to_data = paste0('/media/volume/volume_spatial/hugo/R/data/',run_name,'_norm_combined.parquet')
   data=read_parquet(path_to_data)
   
@@ -22,8 +22,8 @@ CircaFilter = function(data, run_name,circascore){
     data = dplyr::filter(data, data$circascore == 0)
   } else if (circascore == 'non-zero'){
     data = dplyr::filter(data, data$circascore != 0)
-  } else if (circascore == 'all') {print('no circascore')}
-  print('Data Preprocessing done')
+  } else if (circascore == 'all') {log_print('no circascore')}
+  log_print('Data Preprocessing done')
   
   return (data)
 }
@@ -47,7 +47,7 @@ GetValidCells <- function(run_name){
 "Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","Pericyte","Pvalb Gaba","SCH Gaba",
 "SMC","SPA Glut","STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba",
 "Sst Gaba","VLMC","Vip Gaba")}
-  print('Valid celltypes names: Loaded')
+  log_print('Valid celltypes names: Loaded')
   return (valid_cells)
 }
 
@@ -61,7 +61,7 @@ GetValidRegions = function(run_name){
   else if(run_name == 'SD1'){
     valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "SCH", "STR")
   }
-  print('Valid region names: Loaded')
+  log_print('Valid region names: Loaded')
   return (valid_regions)
 }
 
@@ -72,7 +72,7 @@ GetValidCellClasses <- function(run_name){
   } else if (run_name == 'SD1'){
     valid_classes <- c("Glial", "Neuronal", "Vascular","Ependymal")
   }
-  print('Valid cell class names: Loaded')
+  log_print('Valid cell class names: Loaded')
   return (valid_classes)
 }
 
@@ -83,7 +83,7 @@ GetValidNeurotransmitters <- function(run_name){
   } else if (run_name == 'SD1'){
     valid_neurotransmitters <- c("Glutamate", "Gaba", "Acetylcholine")
   }
-  print('Valid neurotransmitter names: Loaded')
+  log_print('Valid neurotransmitter names: Loaded')
   return (valid_neurotransmitters)
 }
 

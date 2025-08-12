@@ -12,7 +12,7 @@
 - [ ] Optimize memory (RAM) usage: check if large object/variable can be deleted if no more used in the analysis
 
 - [ ] Include circacompare analysis in notebook
-- Save logs of output for each run as separate file. R function "sink()" should do the trick. Save in a subfolder "log"
+- [ ] Save logs of output for each run as separate file. ~~R function "sink()" should do the trick. Save in a subfolder "log"~~ "Logr" package is way better.
 
 
 # Misc.

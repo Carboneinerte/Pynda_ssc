@@ -2,6 +2,7 @@ library(readxl)
 library(dplyr)
 library(circacompare)
 library(lubridate)
+library(logr)
 
 #cell type to analyze
 path_to_R = '/media/volume/volume_spatial/hugo/R/'
@@ -14,8 +15,6 @@ list_celltype = c("LHA_Glut","Pericyte","STR_D1_Gaba","SCH_Gaba","L5_NP_CTX_Glut
 
 circacompare_loop = function(path_to_R = '/media/volume/volume_spatial/hugo/R/',
                             cell_type = cell_type){
-
-sink("log/circacompare_2025-08-11.txt", type = c("output", "message"), append= TRUE)
 
 #define paths for the excel files from metacycle. in raw folder. rename to the desired cell type
 path_circa4 <- paste0(path_to_R,"Results/2025-08-08_circa4_celltype/Raw/",cell_type,"_cyc_analysis.xlsx")
@@ -33,10 +32,9 @@ sig_genes_sd1 <- read_excel(path_sd1, sheet = "sig_cyl_gene") %>%
 
 shared_significant_genes <- intersect(sig_genes_circa4, sig_genes_sd1)
 
-print(now(tzone="GMT"))
 found_genes = paste0("Found ", length(shared_significant_genes), " shared significant genes for ", cell_type, ".")
-print(found_genes)
-print(shared_significant_genes[1:8])
+log_print(found_genes)
+log_print(shared_significant_genes[1:8])
 
 #get average measurement data from both
 avg_data_circa4 <- read_excel(path_circa4, sheet = "averagesheet")
@@ -84,7 +82,7 @@ for (gene_name in shared_significant_genes) {
     
   }, error = function(e) {
     error_message = paste0(gene_name, e$message)
-    print(error_message)
+    log_print(error_message)
     message("  Skipping gene '", gene_name, "' due to an error during circacompare: ", e$message)
   })
 }
@@ -105,7 +103,7 @@ for (gene in names(all_results)) {
       mutate(gene = gene, .before = 1)
     
   } else {
-    print("  Skipping gene '", gene, "' from summary file because it has no summary table.")
+    log_print("  Skipping gene '", gene, "' from summary file because it has no summary table.")
   }
 }
 
@@ -118,12 +116,16 @@ write.csv(summary_df, output_filename, row.names = FALSE)
 rds_filename <- file.path(output_path, paste0(gsub(" ", "_", cell_type), "_circacompare_full_object.rds"))
 saveRDS(all_results, file = rds_filename)
 
-sink()
+# sink()
 }
 #will have summary csv, plot file, and R object saved.
 
+tmp = file.path('log/test.log')
+lf = log_open(tmp)
 
 for (cell in list_celltype){
   circacompare_loop(path_to_R = path_to_R, cell_type = cell)
 }
 print('Analyze Finished')
+
+log_close()
