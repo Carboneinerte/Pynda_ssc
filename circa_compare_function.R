@@ -75,8 +75,8 @@ for (gene_name in shared_significant_genes) {
     cc_result <- circacompare(x = x, col_time = "time", col_group = "group", col_outcome = "measure", alpha_threshold = 0.99)
     all_results[[gene_name]] <- cc_result
 
-    plot_filename <- file.path(plot_output_path, paste0(gene_name, "_circacompare_plot.png"))
-    png(plot_filename, width = 8, height = 6, units = "in", res = 300)
+    plot_filename <- file.path(plot_output_path, paste0(gene_name, "_circacompare_plot.svg"))
+    svg(plot_filename, width = 8, height = 6)
     print(cc_result$plot)
     dev.off()
     
@@ -120,7 +120,9 @@ saveRDS(all_results, file = rds_filename)
 }
 #will have summary csv, plot file, and R object saved.
 
-tmp = file.path('log/test.log')
+if (file.exists('log/')){}else{dir.create('log/')}
+log_name = paste0('log/CircaCompare_log_',Sys.Date(),'.log')
+tmp = file.path(log_name)
 lf = log_open(tmp)
 
 for (cell in list_celltype){
