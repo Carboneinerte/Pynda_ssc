@@ -2,9 +2,11 @@
 library(dplyr)
 library(arrow)
 library(MetaCycle)
+library(readr)
+library(knitr)
 
 PreProcessingData = function(run_name, circascore='all'){
-  print("Start importing data")
+  log_print("Start importing data")
   path_to_data = paste0('/media/volume/volume_spatial/hugo/R/data/',run_name,'_norm_combined.parquet')
   data=read_parquet(path_to_data)
   
@@ -20,8 +22,8 @@ CircaFilter = function(data, run_name,circascore){
     data = dplyr::filter(data, data$circascore == 0)
   } else if (circascore == 'non-zero'){
     data = dplyr::filter(data, data$circascore != 0)
-  } else if (circascore == 'all') {print('no circascore')}
-  print('Data Preprocessing done')
+  } else if (circascore == 'all') {log_print('no circascore')}
+  log_print('Data Preprocessing done')
   
   return (data)
 }
@@ -32,22 +34,20 @@ CircaFilter = function(data, run_name,circascore){
 ### Valid cells
 GetValidCells <- function(run_name){
   if (run_name == 'circa4'){
-    valid_cells <- c(
-      "ABC","AHN Glut","Astro TE","CLA EPd CTX Glut","COAa PAA MEA Glut","Choroid","DG Glut","Endothelial","Ependymal",
-                     "L2 3 IT PIR ENTl Glut","L2 3 PIR ENTl Glut","L4 5 IT CTX Glut","L5 ET CTX Glut","L5 NP CTX Glut",
-                     "L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut","LHA Glut","Lamp5 Gaba","MEA Glut","Microglia","OB STR CTX IMN","OPC",
-                     "Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","PVT Glut","Pericyte","Pvalb Gaba","SCH Gaba","SMC","SPA Glut",
-                     "STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba","Sst Gaba",
-      "VLMC","Vip Gaba"
-    )}
+    valid_cells <- c('ABC','AHN Glut','Astro TE','CEA Gaba','CLA EPd CTX Glut','COAa PAA MEA Glut','Choroid',
+'Endothelial','Ependymal','L2 3 IT PIR ENTl Glut','L4 5 IT CTX Glut','L5 ET CTX Glut',
+'L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut','LHA Glut','Lamp5 Gaba',
+'MEA Glut','Microglia','OB STR CTX IMN','OPC','Oligodendrocyte','PAL STR Gaba Chol','PVH Glut','PVT Glut','Pericyte','Pvalb Gaba','SCH Gaba','SMC','STR D1 Gaba','STR D2 Gaba','STR Gaba','STR PAL Gaba','Sncg Gaba','Sst Gaba','VLMC','Vip Gaba'
+)}
   else if (run_name == 'SD1'){
-    valid_cells <- c('ABC','AHN Glut','Astro TE','COAa PAA MEA Glut','DG Glut','Endothelial','Ependymal','L2 3 IT PIR ENTl Glut','L2 3 PIR ENTl Glut',
-                     'L4 5 IT CTX Glut','L5 ET CTX Glut','L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut','LHA Glut','Lamp5 Gaba','MEA Glut','Microglia',
-                     'OB STR CTX IMN','OPC','Oligodendrocyte','PAL STR Gaba Chol','PVH Glut','Pericyte','Pvalb Gaba','SCH Gaba','SMC','STR D1 Gaba','STR D2 Gaba',
-                     'STR Gaba','STR PAL Gaba','Sncg Gaba','Sst Gaba','VLMC','Vip Gaba'
-                     
-    )}
-  print('Valid celltypes names: Loaded')
+    valid_cells <- c("ABC","AHN Glut","Astro TE","CEA Gaba","CLA EPd CTX Glut","COAa PAA MEA Glut",
+"Choroid","Endothelial","Ependymal","L2 3 IT PIR ENTl Glut","L4 5 IT CTX Glut",
+"L5 ET CTX Glut","L5 NP CTX Glut","L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut",
+"LHA Glut","Lamp5 Gaba","MEA Glut","MPO Glut","Microglia","OB STR CTX IMN","OPC",
+"Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","Pericyte","Pvalb Gaba","SCH Gaba",
+"SMC","SPA Glut","STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba",
+"Sst Gaba","VLMC","Vip Gaba")}
+  log_print('Valid celltypes names: Loaded')
   return (valid_cells)
 }
 
@@ -56,57 +56,100 @@ GetValidCells <- function(run_name){
 ### Valid Regions
 GetValidRegions = function(run_name){
   if (run_name == 'circa4'){
-    valid_regions = c("AHN","AMY","CTX","LHA","PVH","PVT","SCH","STR")
+    valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "PVT", "SCH", "STR", "WM")
   }
   else if(run_name == 'SD1'){
-    valid_regions = c(
-                      "AHN","AMY","CTX","LHA","PVH","SCH","STR"
-    )
+    valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "SCH", "STR")
   }
-  print('Valid region names: Loaded')
+  log_print('Valid region names: Loaded')
   return (valid_regions)
 }
 
+### Valid Cell Classes
+GetValidCellClasses <- function(run_name){
+  if (run_name == 'circa4'){
+    valid_classes <- c("Glial", "Neuronal", "Vascular","Ependymal") 
+  } else if (run_name == 'SD1'){
+    valid_classes <- c("Glial", "Neuronal", "Vascular","Ependymal")
+  }
+  log_print('Valid cell class names: Loaded')
+  return (valid_classes)
+}
+
+### Valid Neurotransmitters
+GetValidNeurotransmitters <- function(run_name){
+  if (run_name == 'circa4'){
+    valid_neurotransmitters <- c("Glutamate", "Gaba", "Acetylcholine") 
+  } else if (run_name == 'SD1'){
+    valid_neurotransmitters <- c("Glutamate", "Gaba", "Acetylcholine")
+  }
+  log_print('Valid neurotransmitter names: Loaded')
+  return (valid_neurotransmitters)
+}
+
 ### Clock genes
-clockgenelist = c("Arntl","Clock", "Cry1","Cry2", "Npas2","Nr1d1", "Per1",  "Per2", "Per3", "Rora", "Rorb","Rorc")
+#clockgenelist = c("Arntl","Clock", "Cry1","Cry2", "Npas2","Nr1d1", "Per1",  "Per2", "Per3", "Rora", "Rorb","Rorc")
 
 
 MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date, 
                               use_gene_lists = FALSE, gene_list_path = NULL) {
   
-  celltype_col <- "cell_type_final"
-  region_col   <- "region_automap_name"
+  col_map <- list(
+    celltype = "cell_type_final",
+    region = "region_automap_name",
+    class = "cell_class",
+    neurotransmitter = "neurotransmitter"
+  )
 
-  if (use_gene_lists && is.null(gene_list_path)) {
-    stop("If 'use_gene_lists' is TRUE, you must provide a path in 'gene_list_path'.")
-  }
-  
-  if (length(condition) == 2 && all(c("celltype", "region") %in% condition)) {
-    message("===== Starting COMBINED analysis for Cell Type + Region =====")
-    if (!celltype_col %in% names(data) || !region_col %in% names(data)) {
-      stop(paste("Error: One or both required columns not found in data:", celltype_col, ",", region_col))
+  if (length(condition) == 2 && "region" %in% condition) {
+    #will identify the condition other than region below
+    primary_condition <- condition[condition != "region"]
+    
+    message(paste("===== Starting COMBINED analysis for", primary_condition, "+ Region ====="))
+    
+    primary_col <- col_map[[primary_condition]]
+    region_col  <- col_map[["region"]]
+    
+    #check that all cols are correctly named
+    if (is.null(primary_col) || !primary_col %in% names(data) || !region_col %in% names(data)) {
+      stop("One or both required columns not found in data for the combined analysis.")
     }
+    
+    #to select right function for getvalid___
+    get_valid_items_func <- switch(primary_condition,
+                                   "celltype" = GetValidCells,
+                                   "class" = GetValidCellClasses,
+                                   "neurotransmitter" = GetValidNeurotransmitters,
+                                   stop("Invalid primary condition for combined analysis.")
+    )
+    valid_primary_items <- get_valid_items_func(run_name)
+    
     analysis_data <- data %>%
-      filter(.data[[celltype_col]] %in% GetValidCells(run_name), .data[[region_col]] %in% GetValidRegions(run_name)) %>%
-      mutate(combined_group = paste(.data[[celltype_col]], .data[[region_col]], sep = "_in_"))
+      filter(.data[[primary_col]] %in% valid_primary_items, .data[[region_col]] %in% GetValidRegions(run_name)) %>%
+      mutate(combined_group = paste(.data[[primary_col]], .data[[region_col]], sep = "_in_"))
+    
     items_to_process <- unique(analysis_data$combined_group)
     column_to_filter <- "combined_group"
     analysis_by <- "combined_group"
     data_to_use <- analysis_data
-    message(paste("Found", length(items_to_process), "unique cell type/region combinations to analyze."))
-  } else if (length(condition) == 1 && condition %in% c("celltype", "region")) {
+    
+  } else if (length(condition) == 1 && condition %in% names(col_map)) {
     analysis_by <- condition[1]
     message(paste0("\n\n===== Starting SINGLE analysis by: ", toupper(analysis_by), " ====="))
-    if (analysis_by == "celltype") {
-      items_to_process <- GetValidCells(run_name)
-      column_to_filter <- celltype_col
-    } else {
-      items_to_process <- GetValidRegions(run_name)
-      column_to_filter <- region_col
-    }
+    
+    get_valid_items_func <- switch(analysis_by,
+                                   "celltype" = GetValidCells,
+                                   "region" = GetValidRegions,
+                                   "class" = GetValidCellClasses,
+                                   "neurotransmitter" = GetValidNeurotransmitters,
+                                   stop("Invalid analysis type specified.")
+    )
+    items_to_process <- get_valid_items_func(run_name)
+    column_to_filter <- col_map[[analysis_by]]
     data_to_use <- data
+    
   } else {
-    stop("Invalid 'condition' variable. Please use c('celltype'), c('region'), or c('celltype', 'region').")
+    stop("Invalid 'condition' variable. Please use a single valid condition or a combination of one condition + 'region'.")
   }
   
   siglist <- list()
@@ -196,7 +239,8 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
         method_to_use <- if (length(timepointstolookat) >= 18) c("LS", "JTK") else "LS"
         d <- meta2d(infile = paste0(outfile_prefix, "_data.csv"), outdir = path_to_save,
                     filestyle = "csv", timepoints = timepointstolookat, minper = 20, 
-                    maxper = 28, cycMethod = method_to_use, outputFile = FALSE)
+                    maxper = 28, cycMethod = method_to_use, outputFile = FALSE,
+                    parallelize = FALSE, nCores = 40)
         
         if("meta2d_pvalue" %in% names(d$meta)) {
           d$meta$meta2d_pvalue <- as.numeric(d$meta$meta2d_pvalue)
@@ -206,6 +250,8 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
         } else {
           d$meta$LS_pvalue <- as.numeric(d$meta$LS_pvalue)
           sigcyclegene <- d$meta %>% filter(LS_pvalue < 0.05)
+          d$meta$LS_BH.Q <- as.numeric(d$meta$LS_BH.Q)
+          sigcyclegeneBH <- d$meta %>% filter(LS_BH.Q < 0.05)
         }
 
         dftosd <- as.data.frame(t(do.call(rbind, datasdlist)))[-1, ]; dftosd$gene <- rownames(dftosd) 
@@ -227,9 +273,9 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
     names(summary_df)[1] <- analysis_by
     write.csv(summary_df, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cycling_gene_per_group.csv"), row.names = FALSE)
     
-    summary_df_BH <- data.frame(group = names(siglistBH), cycling_gene_count = sapply(siglist, nrow))
+    summary_df_BH <- data.frame(group = names(siglistBH), cycling_gene_count = sapply(siglistBH, nrow))
     names(summary_df_BH)[1] <- analysis_by
-    write.csv(summary_df_BH, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cycling_gene_per_group.csv"), row.names = FALSE)
+    write.csv(summary_df_BH, paste0(path_to_save, "/Summary/", date, "_", run_name, "_cycling_gene_per_group_BH.csv"), row.names = FALSE)
     
     all_cycling_genes <- do.call(rbind, lapply(names(siglist), function(name) data.frame(gene=siglist[[name]]$CycID, item_name=name)))
     if (!is.null(all_cycling_genes) && nrow(all_cycling_genes) > 0) {

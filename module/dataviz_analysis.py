@@ -54,7 +54,7 @@ def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = '
         plt.show()
         
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_{cluster_to_use}.png")
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
         
     ####
     else:
@@ -85,7 +85,7 @@ def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = '
         plt.legend(markerscale=20, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
         
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png")
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
     
 
 def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final', cluster_to_map = 'all',
@@ -154,7 +154,7 @@ def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_ty
         plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
 
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png")
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
 
 
 def polygonplot_dataprep(adata_main, sample_to_plot, cluster_to_use = 'cell_type_newnum_final',
@@ -314,7 +314,7 @@ def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None
     if save_plot == True:
         now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
         tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=600, transparent=True)
+        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=300, transparent=True)
     
     plt.show()
 
@@ -408,6 +408,6 @@ def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, regio
     if save_plot == True:
         now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
         tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=600, transparent=True)
+        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=300, transparent=True)
     
     plt.show()
