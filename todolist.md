@@ -16,4 +16,4 @@
 
 
 # Misc.
-- [ ] Same scale polar plot
+- [X] Same scale polar plot

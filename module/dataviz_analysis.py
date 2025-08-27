@@ -157,7 +157,7 @@ def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_ty
             plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
 
 
-def polygonplot_dataprep(adata_main, sample_to_plot, cluster_to_use = 'cell_type_newnum_final',
+def polygonplot_dataprep(adata_main, sample_to_plot, dir_notebook, cluster_to_use = 'cell_type_newnum_final',
                           cmap_ = 'tab20b'):
 
     ### Generate a color palette for the clusters - to make color stay consistent across samples
@@ -213,7 +213,7 @@ def polygonplot_dataprep(adata_main, sample_to_plot, cluster_to_use = 'cell_type
 
 
 def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None, region_only = None,
-                      coord_ = None, save_plot = False):
+                      coord_ = None, save_plot = False, legend = False):
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
@@ -263,10 +263,11 @@ def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None
     )
     cells_geo_crop.plot(ax=ax,
                         color = cells_geo_crop['leiden_colors'],
-                        alpha=0.75,
+                        alpha=1,
                         aspect=1,
                         zorder=1,
-                        edgecolor = cells_geo_crop['leiden_colors'],
+                        edgecolor = "black", #cells_geo_crop['leiden_colors'],
+                        linewidth= 1,
                     )
     ax.set_aspect('equal', adjustable='box')
 
@@ -308,13 +309,14 @@ def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None
         cbar.set_label(gene_, size=20)
 
     ##### Add the custom legend
-    ax.legend(handles=legend_patches,     loc='center left', 
-        bbox_to_anchor=(1, 0.5), title='Cell Type')
+    if legend:    
+        ax.legend(handles=legend_patches,     loc='center left', 
+            bbox_to_anchor=(1, 0.5), title='Cell Type')
 
-    if save_plot == True:
+    if save_plot:
         now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
         tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=300, transparent=True)
+        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
     
     plt.show()
 
