@@ -12,3 +12,7 @@ Results/
 gene2go
 log/
 plot/
+.vscode
+.ipynb_checkpoints
+.idea
+
