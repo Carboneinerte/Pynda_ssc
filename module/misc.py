@@ -35,7 +35,11 @@ def sample_name_import(name_experiment):
         'circa2' : ['circa2-ZT01','circa2-ZT05','circa2-ZT09','circa2-ZT13','circa2-ZT17','circa2-ZT21'],
         'circa-SD' : ['circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21',
                    "SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21"],
-        
+        'all-samples-C0' : ["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2"],
+        'all-samples-C1' : ["3159-2", "3161-1"],
+        'all-samples-C2' : ["3159-3","3161-2"],
+        'all-samples-C3' : ["3159-4", "3161-3"],
+
         }
     
     samples = samples_ids = dict_exp_name[name_experiment]
@@ -245,23 +249,15 @@ def genes_list(type_):
     return dict_list[type_]
 
 
-def circa_score_bis(df_circa, celltype):
+def prot_name_annot():
+    df_annotation = pd.read_csv('Mouse5K_metadata.csv')
+    full_dict = dict(zip(df_annotation['gene_name'], df_annotation['protein_name']))
+    ens_dict = dict(zip(df_annotation['gene_name'], df_annotation['gene_id']))
+    alt_dict = dict(zip(df_annotation['gene_name'], df_annotation['Alternative names']))
 
-    from misc import genes_list
-
-    clockgenelist = genes_list('clock')
-
-    df_circa_temp = df_circa[df_circa['cell_type_final']==celltype]
-
-    for clockgene in clockgenelist:
-        mean_exp_df = df_circa.groupby('cell_type_final')[clockgene].mean() ### Can do one table?
-        mean_exp_df['normalized'] = mean_exp_df[clockgene] / max(mean_exp_df[clockgene]) 
-        norm_mean_exp = mean_exp_df.loc[celltype, 'normalized']
-
-        prct_group = len(df_circa_temp[df_circa_temp[clockgene]> 0]) / len(df_circa_temp)
-
-        temp = (1+ prct_group) * (1 + norm_mean_exp)
-        if cycling:
-            temp = temp * 2 ### Factor depending on the number of celltype having this gene cycling ? 
-        else:
-            temp = temp
+    name_annot = {
+        'full_dict' : full_dict,
+        'ens_dict' : ens_dict,
+        'alt_dict' : alt_dict
+    }
+    return name_annot
