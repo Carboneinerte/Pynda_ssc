@@ -20,6 +20,7 @@ def cell_class():
         'Astro TE': 'Glial',
         'Oligodendrocyte': 'Glial',
         'Choroid' : 'Ependymal',
+        'CHOR' : 'Ependymal',
         'SMC' : 'Vascular'
         }
     return dict_temp
