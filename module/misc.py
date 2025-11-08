@@ -1,7 +1,7 @@
 def list_annotations():
     list_anno = [
         "sample","ZT", "Genotype", "run", "cell_type_final", "region_automap_name",
-        "cell_class","circascore","x_centroid","y_centroid", "Sex", 'Neurotransmitter',"celltype_number"
+        "cell_class","circascore","x_centroid","y_centroid", "Sex", 'Neurotransmitter',"celltype_number", 'plaque'
                  ]
     return list_anno
 
