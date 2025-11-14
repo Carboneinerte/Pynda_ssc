@@ -40,6 +40,7 @@ def sample_name_import(name_experiment):
         'all-samples-C1' : ["3159-2", "3161-1"],
         'all-samples-C2' : ["3159-3","3161-2"],
         'all-samples-C3' : ["3159-4", "3161-3"],
+        'all-samples-C123' : ["3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
 
         }
     
