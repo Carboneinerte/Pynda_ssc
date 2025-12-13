@@ -238,12 +238,12 @@ def genes_list(type_):
                       'Sntb1','Sorcs3','Sox10','Sox11','Sox17','Spag16','Spi1','Spp1','Sst','Stard5','Strip2','Syndig1','Syt17','Syt2','Syt6','Tacr1','Tanc1','Th','Thsd7a','Tle4','Tmem132d','Tmem163','Tmem255a','Tox','Trbc2','Trem2','Trp73','Trpc4','Unc13c','Vat1l','Vip',
                       'Vwc2l','Wfs1','Zfp366','Zfp536','Zfpm2'],
 
-    'common_genes' : ['Acvrl1', 'Aldh1a2', 'Angpt1', 'Ano1', 'Aqp4', 'Arc', 'Arhgef28', 'Bcl11b', 'Bdnf','Bhlhe22', 'Bhlhe40', 'Cacna2d2', 'Calb1', 'Calb2', 'Car4', 'Cbln1', 'Cbln4', 'Ccn2', 'Cd24a', 'Cd44', 'Cd53', 'Cd68', 'Cd93', 'Cdh13', 'Cdh20', 'Cdh4', 'Cdh6', 'Cdh9',
-                       'Chat', 'Chrm2', 'Cntn6', 'Cntnap4', 'Cntnap5b', 'Col1a1', 'Col6a1', 'Cort', 'Cplx3', 'Cpne4', 'Crh', 'Cspg4', 'Cux2', 'Cyp1b1', 'Dkk3', 'Dner', 'Dpyd', 'Ebf3', 'Epha4', 'Eya4', 'Fezf2', 'Fibcd1', 'Fign', 'Fmod', 'Fn1', 'Foxp2', 'Gad1', 'Gad2', 
-                       'Gadd45a', 'Galnt14', 'Gfap', 'Gfra2', 'Gjb2', 'Gli3', 'Gpr17', 'Grik3', 'Gucy1a1', 'Hapln1', 'Hat1', 'Hs3st2', 'Htr1f', 'Id2', 'Igf1', 'Igf2', 'Igsf21', 'Ikzf1', 'Inpp4b', 'Kcnh5', 'Kcnmb2', 'Kdr', 'Lamp5', 'Lypd6', 'Mecom', 'Meis2', 'Myo16', 'Ndst3',
-                         'Nell1', 'Neurod6', 'Npy2r', 'Nr2f2', 'Nrep', 'Nrn1', 'Nrp2', 'Nts', 'Ntsr2', 'Opalin', 'Opn3', 'Pde7b', 'Pdgfra', 'Pdyn', 'Pecam1', 'Pkib', 'Plekha2','Pln','Pou3f1', 'Ppp1r1b', 'Prox1', 'Prph', 'Pthlh', 'Pvalb', 'Rab3b', 'Rfx4', 'Ror1', 'Rorb', 
-                         'Rspo1','Rspo2', 'Rxfp1', 'Satb2', 'Sdk2', 'Sema3a', 'Sema3d','Sema3e', 'Sema5b', 'Sema6a', 'Slc13a4', 'Slc17a6', 'Slc17a7', 'Slc44a5', 'Slc6a3', 'Slit2', 'Sncg', 'Sntb1', 'Sorcs3', 'Sox10', 'Sox11', 'Sox17', 'Spi1', 'Sst', 'Syt2', 'Syt6', 'Tacr1', 
-                         'Th', 'Tle4', 'Tmem163', 'Tox', 'Trem2', 'Trp73', 'Trpc4', 'Vip', 'Vwc2l', 'Zfp536', 'Zfpm2'], ### To recheck
+    'common_genes' : ['Acvrl1', 'Aldh1a2', 'Angpt1', 'Ano1', 'Aqp4', 'Arc', 'Arhgef28', 'Bcl11b', 'Bdnf', 'Bhlhe22', 'Bhlhe40', 'Cacna2d2', 'Calb1', 'Calb2', 'Car4', 'Cbln1', 'Cbln4', 'Ccn2', 'Cd24a', 'Cd44', 'Cd53', 'Cd68', 'Cd93', 'Cdh13', 'Cdh20', 'Cdh4', 'Cdh6',
+                      'Cdh9', 'Chat', 'Chrm2', 'Cntn6', 'Cntnap4', 'Cntnap5b', 'Col1a1', 'Col6a1', 'Cort', 'Cplx3', 'Cpne4', 'Crh', 'Cspg4', 'Cux2', 'Cyp1b1', 'Dkk3', 'Dner', 'Dpyd', 'Ebf3', 'Epha4', 'Eya4', 'Fezf2', 'Fibcd1', 'Fign', 'Fmod', 'Fn1', 'Foxp2', 'Gad1',
+                      'Gad2', 'Gadd45a', 'Galnt14', 'Gfap', 'Gfra2', 'Gjb2', 'Gli3', 'Gpr17', 'Grik3', 'Gucy1a1', 'Hapln1', 'Hat1', 'Hs3st2', 'Htr1f', 'Id2', 'Igf1', 'Igf2', 'Igsf21', 'Ikzf1', 'Inpp4b', 'Kcnh5', 'Kcnmb2', 'Kdr', 'Lamp5', 'Lypd6', 'Mecom', 'Meis2',
+                      'Myo16', 'Ndst3', 'Nell1', 'Neurod6', 'Npy2r', 'Nr2f2', 'Nrep', 'Nrn1', 'Nrp2', 'Nts', 'Ntsr2', 'Opalin', 'Opn3', 'Pde7b', 'Pdgfra', 'Pdyn', 'Pecam1', 'Pkib', 'Plekha2', 'Pln', 'Pou3f1', 'Ppp1r1b', 'Prox1', 'Prph', 'Pthlh', 'Pvalb', 'Rab3b',
+                      'Rfx4', 'Ror1', 'Rorb', 'Rspo1', 'Rspo2', 'Rxfp1', 'Satb2', 'Sdk2', 'Sema3a', 'Sema3d', 'Sema3e', 'Sema5b', 'Sema6a', 'Slc13a4', 'Slc17a6', 'Slc17a7', 'Slc44a5', 'Slc6a3', 'Slit2', 'Sncg', 'Sntb1', 'Sorcs3', 'Sox10', 'Sox11', 'Sox17', 'Spi1',
+                      'Sst', 'Syt2', 'Syt6', 'Tacr1', 'Th', 'Tle4', 'Tmem163', 'Tox', 'Trem2', 'Trp73', 'Trpc4', 'Vip', 'Vwc2l', 'Zfp536', 'Zfpm2'], ### To recheck
 
 
     }
