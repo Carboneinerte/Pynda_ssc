@@ -79,7 +79,6 @@ def add_annotations(adata, df):
     list_anno = list_annotations()
     list_anno = [anno for anno in list_anno if anno in adata.obs.columns]
     for anno in list_anno:
-        dict_temp = dict(zip(adata.obs['cell_id'], adata.obs[anno]))
-        df[anno] = df['cell_id'].map(dict_temp)
+        df[anno] = df['cell_id'].map(dict(zip(adata.obs['cell_id'], adata.obs[anno])))
     
     return df
