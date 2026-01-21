@@ -3,7 +3,12 @@ import scanpy as sc
 import os
 from module.misc import list_annotations
 
-def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir):
+import pandas as pd
+import scanpy as sc
+import os
+from module.misc import list_annotations
+
+def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir, remove_noise=False):
     adatas = []
     for sample, sample_id in zip(samples, samples_ids):
         adata = sc.read_10x_h5(f"{dir}/{sample}/cell_feature_matrix.h5")
@@ -18,6 +23,12 @@ def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir):
         sc.pp.filter_genes(adata, min_cells=5) ## Filter genes expressed in less than 5 cells
         adata.obs_names = [f"{sample_id}_{cell_id}" for cell_id in adata.obs_names]
         adata.obs['cell_id'] = adata.obs_names
+
+        if remove_noise == True:
+            mask = [gene not in list_noise for gene in adata.var_names]
+            adata = adata[:, mask].copy()
+            # print(adata.shape)
+        
         adatas.append(adata)
         # adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
         print(f"Sample {sample} done")
