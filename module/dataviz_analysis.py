@@ -13,10 +13,17 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 
 
-def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final',
-                          individual_plot = True, save_plot = False, cmap_ = 'hls',
-                            ):
-
+def umap_plot_indi_multi(adata_to_plot,
+                         name_dir : str,
+                         dir_notebook : str,
+                         cluster_to_use : str = 'cell_type_newnum_final',
+                         individual_plot : bool = True,
+                         save_plot : bool = False,
+                         cmap_ : str = 'hls',
+                        ):
+'''
+Plot UMAP with all samples combined or with individual samples.
+'''
 
     adata_to_plot.obsm['umap'] = adata_to_plot.obsm['reduced_pc_20_umap']
     adata_to_plot.obs['umap-1'] = adata_to_plot.obsm['umap'][:, 0]
@@ -96,6 +103,28 @@ def cluster_plot(adata_to_plot,
                  cmap_ : str = 'tab20b',
                  save_plot : bool = False
                  ):
+    
+    '''
+    Spatial plot of individual cells for each sample separately.
+
+    Cluster usable:
+    'cell_type_newnum_auto_sub','cell_type_newnum_auto','cell_type_newnum_final',
+    'cell_class_newnum','region_automap_num',"leiden","kmeans","circascore"
+
+    Docstring for cluster_plot
+    
+    :param adata_to_plot: Description
+    :param name_dir: Description
+    :param dir_notebook: Description
+    :param cluster_to_use: Description
+    :type cluster_to_use: str
+    :param cluster_to_map: Description
+    :type cluster_to_map: list
+    :param cmap_: Description
+    :type cmap_: str
+    :param save_plot: Description
+    :type save_plot: bool
+    '''
 
     label_to_use = cluster_to_use
     test_dict = {
@@ -163,8 +192,29 @@ def cluster_plot(adata_to_plot,
             plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
 
 
-def polygonplot_dataprep(adata_main, sample_to_plot, dir_notebook, cluster_to_use = 'cell_type_newnum_final',
-                          cmap_ = 'tab20b'):
+def polygonplot_dataprep(adata_main,
+                         sample_to_plot : str,
+                         dir_notebook : str,
+                         cluster_to_use : str = 'cell_type_newnum_final',
+                         cmap_ : str = 'tab20b'
+                         ):
+    
+    '''
+    Docstring for polygonplot_dataprep
+    
+    Prepare data for polygon plot. Only ONE SAMPLE at the time.
+
+
+    :param adata_main: main AnnData object
+    :param sample_to_plot: Full name from 'sample' columns
+    :type sample_to_plot: str
+    :param dir_notebook: Description
+    :type dir_notebook: str
+    :param cluster_to_use: Description
+    :type cluster_to_use: str
+    :param cmap_: Will be used for the polygons colors
+    :type cmap_: str
+    '''
 
     ### Generate a color palette for the clusters - to make color stay consistent across samples
     num_clusters = len(adata_main.obs[cluster_to_use].astype(int).unique())
@@ -218,8 +268,40 @@ def polygonplot_dataprep(adata_main, sample_to_plot, dir_notebook, cluster_to_us
 
 
 
-def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None, region_only = None,
-                      coord_ = None, save_plot = False, legend = False):
+def polygonplot_plot(df : Dataframe,
+                     cells_geo : Dataframe,
+                     cluster_to_use : str = 'cell_type_newnum_final',
+                     gene_ : str = None,
+                     region_ : str = None,
+                     region_only : str = None,
+                     coord_ : list = None,
+                     save_plot : bool = False,
+                     legend : bool = False
+                     ):
+    
+    '''
+    Docstring for polygonplot_plot
+    
+    :param df: Description
+    :type df: Dataframe
+    :param cells_geo: Description
+    :type cells_geo: Dataframe
+    :param cluster_to_use: Description
+    :type cluster_to_use: str
+    :param gene_: Description
+    :type gene_: str
+    :param region_: Description
+    :type region_: str
+    :param region_only: Description
+    :type region_only: str
+    :param coord_: Description
+    :type coord_: list
+    :param save_plot: Description
+    :type save_plot: bool
+    :param legend: Description
+    :type legend: bool
+    '''
+
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
