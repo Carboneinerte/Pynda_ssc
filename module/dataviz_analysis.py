@@ -88,8 +88,14 @@ def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = '
             plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
     
 
-def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final', cluster_to_map = 'all',
-                 cmap_ = 'tab20b', save_plot = False):
+def cluster_plot(adata_to_plot,
+                 name_dir,
+                 dir_notebook,
+                 cluster_to_use : str = 'cell_type_newnum_final',
+                 cluster_to_map : list = ['all'],
+                 cmap_ : str = 'tab20b',
+                 save_plot : bool = False
+                 ):
 
     label_to_use = cluster_to_use
     test_dict = {
@@ -124,7 +130,7 @@ def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_ty
                                 figsize=(15,25))
         axs = axs.flatten()# Mapping of clusters
 
-        if cluster_to_map != 'all':
+        if cluster_to_map != ['all']:
             cluster_to_map2 = cluster_to_map
             color_samples = ['red','green','blue',"black",'magenta','pink',"darkgreen",'coral','orchid','pink']
             while len(color_samples) < len(cluster_to_map):
