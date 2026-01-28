@@ -17,17 +17,19 @@ def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir, remove_nois
         adata.obs = df.copy()
         adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
         adata.layers["counts"] = adata.X.copy()
+        if remove_noise == True:
+            path_to_list = f'undernoise_{name_dir}.csv'
+            list_noise = pd.read_csv(path_to_list)
+            list_noise = list(list_noise['0'].values)
+            list_noise[0:5]
+            mask = [gene not in list_noise for gene in adata.var_names]
+            adata = adata[:, mask].copy()
         # sc.pp.calculate_qc_metrics(adata,  percent_top=(10, 20, 50, 150), inplace=True)
-        # sc.pp.filter_cells(adata, max_counts=1000) ## Possible filter to remove cells with too many transcripts
+        sc.pp.filter_cells(adata, max_counts=4000) ## Possible filter to remove cells with too many transcripts
         sc.pp.filter_cells(adata, min_counts=40) ## Filter cells with less than 40 transcripts
         sc.pp.filter_genes(adata, min_cells=5) ## Filter genes expressed in less than 5 cells
         adata.obs_names = [f"{sample_id}_{cell_id}" for cell_id in adata.obs_names]
         adata.obs['cell_id'] = adata.obs_names
-
-        if remove_noise == True:
-            mask = [gene not in list_noise for gene in adata.var_names]
-            adata = adata[:, mask].copy()
-            # print(adata.shape)
         
         adatas.append(adata)
         # adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")

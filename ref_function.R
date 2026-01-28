@@ -35,25 +35,21 @@ CircaFilter = function(data, run_name,circascore){
 GetValidCells <- function(run_name){
   if (run_name == 'circa4'){
     valid_cells <- c(
-      "ABC",      "AHN_Glut",
-      "Astrocyte",      "BST_MPN_Gaba",      "Choroid","CLA_EPd_CTX_Glut",
-      "COAa_PAA_MEA_Glut","Endothelial","Ependymal","L2_3_IT_CTX_Glut","L2_3_IT_PIR_ENTl_Glut","L4_5_IT_CTX_Glut",      "L5_ET_CTX_Glut",      "L5_NP_CTX_Glut",      "L6_CT_CTX_Glut",      "L6_IT_CTX_Glut",      "L6b_CTX_Glut",
-      "Lamp5_Gaba",      "LHA_Glut",
-      "MEA_Glut",
-      "Microglia",      "OB_STR_CTX_Inh_IMN",      "Oligodendrocyte",
-      "OPC",      "PAL_STR_Gaba_Chol",
-      "Pericyte",      "Pvalb_Gaba",      "PVH_SO_Glut",      "PVR_Gaba",
-      "PVT_Glut",      "SCH_Gaba",      "SI_Gaba",
-      "Sst_Gaba",
-      "STR_D1_Gaba","STR_D2_Gaba","STR_Gaba","STR_PAL_Gaba","TH_Glut","Vip_Gaba","VLMC"
-      
-      
+      "ABC","AHN_Glut", "Astrocyte",  "BST_MPN_Gaba","Choroid","CLA_EPd_CTX_Glut","COAa_PAA_MEA_Glut",
+      "Endothelial","Ependymal","L2_3_IT_CTX_Glut","L2_3_IT_PIR_ENTl_Glut","L4_5_IT_CTX_Glut","L5_ET_CTX_Glut",
+      "L5_NP_CTX_Glut","L6_CT_CTX_Glut","L6_IT_CTX_Glut","L6b_CTX_Glut","Lamp5_Gaba","LHA_Glut","MEA_Glut",
+      "Microglia","OB_STR_CTX_Inh_IMN","Oligodendrocyte","OPC","PAL_STR_Gaba_Chol","Pericyte","Pvalb_Gaba",
+      "PVH_SO_Glut","PVR_Gaba","PVT_Glut","RE_Glut",'RT_ZI_Gaba',"SCH_Gaba","SI_Gaba",
+      "Sst_Gaba","STR_D1_Gaba","STR_D2_Gaba","STR_Gaba","STR_PAL_Gaba","TH_Glut","Vip_Gaba","VLMC"
 )}
   else if (run_name == 'SD1'){
     valid_cells <- c(
-      "ABC","AHN_Glut","Astrocyte","BST_MPN_Gaba","Choroid","CLA_EPd_CTX_Glut","COAa_PAA_MEA_Glut","Endothelial","Ependymal","L2_3_IT_CTX_Glut","L2_3_IT_PIR_ENTl_Glut","L4_5_IT_CTX_Glut",
-"L5_ET_CTX_Glut","L5_NP_CTX_Glut","L6_CT_CTX_Glut","L6_IT_CTX_Glut","L6b_CTX_Glut","Lamp5_Gaba","LHA_Glut","MEA_Glut","Microglia","OB_STR_CTX_Inh_IMN","Oligodendrocyte","OPC",
-"PAL_STR_Gaba_Chol","Pericyte","Pvalb_Gaba","PVH_SO_Glut","PVT_Glut","SCH_Gaba","SI_Gaba","Sst_Gaba","STR_D1_Gaba","STR_D2_Gaba","STR_Gaba","STR_PAL_Gaba","Vip_Gaba","VLMC"      
+      "ABC","AHN_Glut","Astrocyte","BST_MPN_Gaba","Choroid","CLA_EPd_CTX_Glut","COAa_PAA_MEA_Glut","Endothelial",
+      "Ependymal","L2_3_IT_CTX_Glut","L2_3_IT_PIR_ENTl_Glut","L4_5_IT_CTX_Glut","L5_ET_CTX_Glut","L5_NP_CTX_Glut",
+      "L6_CT_CTX_Glut","L6_IT_CTX_Glut","L6b_CTX_Glut","Lamp5_Gaba","LHA_Glut","MEA_Glut","Microglia",
+      "OB_STR_CTX_Inh_IMN","Oligodendrocyte","OPC","PAL_STR_Gaba_Chol","Pericyte","Pvalb_Gaba","PVH_SO_Glut",
+      "PVT_Glut","RT_ZI_Gaba","SCH_Gaba","SI_Gaba","Sst_Gaba","STR_D1_Gaba","STR_D2_Gaba","STR_Gaba","STR_PAL_Gaba",
+      "Vip_Gaba","VLMC"      
 )}
   log_print('Valid celltypes names: Loaded')
   return (valid_cells)
