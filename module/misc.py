@@ -21,7 +21,10 @@ def cell_class():
         'Oligodendrocyte': 'Glial',
         'Choroid' : 'Ependymal',
         'CHOR' : 'Ependymal',
-        'SMC' : 'Vascular'
+        'SMC' : 'Vascular',
+        "Astro_TE" : "Glial",
+        "Astro_NT" : "Glial",
+        "Hypendymal" : "Ependymal"
         }
     return dict_temp
 

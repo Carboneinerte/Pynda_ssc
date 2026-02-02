@@ -150,6 +150,7 @@ def cluster_table(adata_to_use, Clusters_to_use = 'cell_type_newnum_auto_sub', s
 from module.misc import cell_class
 
 def cell_class_annotation(adata):
+    from module.misc import cell_class
     adata.obs['cell_class'] = 'Neuronal'
 
     dict_type = dict(zip(adata.obs['cell_type_final'],adata.obs['cell_class']))
