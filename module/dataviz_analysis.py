@@ -21,9 +21,9 @@ def umap_plot_indi_multi(adata_to_plot,
                          save_plot : bool = False,
                          cmap_ : str = 'hls',
                         ):
-'''
-Plot UMAP with all samples combined or with individual samples.
-'''
+    '''
+    Plot UMAP with all samples combined or with individual samples.
+    '''
 
     adata_to_plot.obsm['umap'] = adata_to_plot.obsm['reduced_pc_20_umap']
     adata_to_plot.obs['umap-1'] = adata_to_plot.obsm['umap'][:, 0]
@@ -268,8 +268,8 @@ def polygonplot_dataprep(adata_main,
 
 
 
-def polygonplot_plot(df : Dataframe,
-                     cells_geo : Dataframe,
+def polygonplot_plot(df,
+                     cells_geo,
                      cluster_to_use : str = 'cell_type_newnum_final',
                      gene_ : str = None,
                      region_ : str = None,
