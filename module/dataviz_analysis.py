@@ -155,6 +155,8 @@ def cluster_plot(adata_to_plot,
 
         # Map all cells
         b = int(adata_to_plot.obs['sample'].nunique() / 3)
+        if b == 0:
+            b=1
         fig, axs = plt.subplots(b,3,
                                 figsize=(15,25))
         axs = axs.flatten()# Mapping of clusters
@@ -180,7 +182,7 @@ def cluster_plot(adata_to_plot,
                     colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
                 else:
                     colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
-                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.005, label=cluster_data[label_to_use].unique()[0])
+                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.05, marker = 'o', label=cluster_data[label_to_use].unique()[0])
                 axs[idx].set_title(f"Sample {sample}")
                 axs[idx].xaxis.set_tick_params(labelbottom=False)
                 axs[idx].yaxis.set_tick_params(labelleft=False)
