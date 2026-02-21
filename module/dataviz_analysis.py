@@ -90,7 +90,7 @@ def umap_plot_indi_multi(adata_to_plot,
             ax.text(centroid['umap-3'], centroid['umap-4'], str(cluster_id), color='black', fontsize=12, ha = 'center')
 
         plt.legend(markerscale=20, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-        
+        plt.show()
         if save_plot == True:
             plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
     
@@ -189,7 +189,8 @@ def cluster_plot(adata_to_plot,
                 axs[idx].set_aspect('equal', adjustable='box')
         plt.legend(markerscale=50, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
         plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
-
+        plt.show()
+        
         if save_plot == True:
             plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
 
