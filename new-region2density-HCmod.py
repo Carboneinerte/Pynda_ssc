@@ -10,21 +10,27 @@ import os
 
 save_path = "/media/volume/volume_spatial/hugo/notebook/h5ad/AD_unassigned/"
 
-ppath = "/media/volume/volume_spatial/hugo/data/"
-#pfilelist = ['CTX_transcripts_circa4-IGM-ZT01.parquet','SCH_transcripts_circa4-IGM-ZT01.parquet']
-pfilelist = ["3161-1","3159-2"
-    # 'circa4-IGM-ZT13',
-#     "SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21",
-#  'circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21'
- ]
+expe = 'circa-SD'
+
+if expe == 'C0':
+    pfilelist = [
+        # "3160-2","2505-1","2505-2","2670-1",
+          "3160-1","3159-1"]
+elif expe == 'C123':
+    pfilelist = ["3161-1","3161-2"]#,"3161-3","3159-2","3159-3","3159-4"]
+elif expe == 'circa-SD':
+    pfilelist = ["SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21",'circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21']
+else:
+    print("Wrong expe input")
 #out_path = "density_bins_by_region-test.csv"
 #outpathcounter = 0 #lazy way to make unique outfiles. you can change this to a better naming convention
+
+
 BIN = 50   # your x (same for width/height)
 x0 = 0.0          # grid origin; set to 0 or use min below
 y0 = 0.0
-
 adatas = []
-
+ppath = "/media/volume/volume_spatial/hugo/data/"
 coordpath = '/media/volume/volume_spatial/hugo/notebook/coordinates/whole_brain/'
 
 def bins_for_geom(geom, bin_size, x0=0.0, y0=0.0):
@@ -94,15 +100,20 @@ def clipped_bin_areas(
     return pd.concat(rows, ignore_index=True)
 
 for pfile in pfilelist:
+    print(pfile, expe)
     sti = time.time()
-    parquet_in = ppath+pfile+'/transcripts.parquet'#"/media/volume/volume_spatial/hugo/data/circa4-IGM-ZT01/splitregion/CTX_transcripts_circa4-IGM-ZT01.parquet"
+    if expe == 'C0':
+        parquet_in = f'/media/volume/volume_spatial/hugo/data/{pfile}/transcripts_light.parquet'
+    else:
+        parquet_in = f'/media/volume/volume_spatial/hugo/data/{pfile}/transcripts_light.parquet'#"/media/volume/volume_spatial/hugo/data/circa4-IGM-ZT01/splitregion/CTX_transcripts_circa4-IGM-ZT01.parquet"
     #parquet_out = "coords_binned-test.parquet"
-    out_path = "data/density-bins-5k/"+pfile+"-densitybins.csv"
+    out_path = "data/density-bins-5k/"+pfile+"-densitybins.parquet"
     print(pfile,'bin size = ',BIN)
     #this takes the parquet file and saves a new parquet file with bin columns. you could rename the out file if you want to save it in place
     df = (
         pl.scan_parquet(parquet_in)  # lazy scan (doesn't load all at once)
-        .filter(~pl.col("feature_name").str.contains("_") & (pl.col("qv") > 20)) #should filter out the codewords and low quality counts
+        .filter(~pl.col("feature_name").str.contains("_"))
+                  #should filter out the codewords and low quality counts
         .with_columns([
             (((pl.col("x_location") - x0) / BIN).floor()*BIN).cast(pl.Int64).alias("bin_x"),
             (((pl.col("y_location") - y0) / BIN).floor()*BIN).cast(pl.Int64).alias("bin_y"),
@@ -112,16 +123,15 @@ for pfile in pfilelist:
             (pl.col("bin_x").cast(pl.Utf8) + pl.lit("_") + pl.col("bin_y").cast(pl.Utf8)).alias("bin_key")
         ])
     )
+    print(df.collect_schema().names())
     print('binned transcripts')
     #df.sink_parquet(parquet_out)  # writes efficiently
-
-
 
     #load in shapes. will have to loop through these too
     #dfg_r = gpd.read_file("/media/volume/volume_spatial/hugo/notebook/coordinates/Region_prediction/Xenium-data-coordinates-filtered_circa4-IGM-ZT01.geojson")
     dfg_r = gpd.read_file(coordpath+pfile+"_wholebrain_annotation.geojson")
     # this gets rid of the warnings Only do this if the CRS is currently geographic
-
+    print(dfg_r.head())
     if dfg_r.crs is None or dfg_r.crs.is_geographic:
         dfg_r = dfg_r.set_crs("EPSG:3857", allow_override=True)
     #pctx = dfg_r.loc[dfg_r['cell_type_newnum_final']=="CTX",'geometry'].values[0]
@@ -135,9 +145,10 @@ for pfile in pfilelist:
     cba = clipped_bin_areas(dfg_r, name_col="region", bin_size=50)
     #warings are assuming geographic corrdinates that need to take into account curvature. ok to ignore i think
 
-
     #parquet_path = "coords_binned-test.parquet"  # the parquet that already has bin_key (or bin_x/bin_y)
     print("adding U/A counts/density")
+    print(cba.columns)
+    print(df.collect_schema().names())
     bin_counts = (
         df#pl.scan_parquet(parquet_path)
         .with_columns([ #modify this to remove codewords
@@ -151,9 +162,10 @@ for pfile in pfilelist:
         ])
         .collect()
     )
+
     # Convert Polars -> pandas for a simple merge
     bin_counts_pd = bin_counts.to_pandas()
-
+    print(bin_counts_pd.head())
     # Merge onto result (keeps all bins in result)
     result = cba.merge(
     bin_counts_pd,
@@ -174,13 +186,15 @@ for pfile in pfilelist:
     result['y_centroid'] = result['bin_y'] + 25
     result['gridcell_id'] = [f"grid_{cell_id}" for cell_id in result['bin_key']]
     result = result[result['area'] > 25 ]
+    result = result[(result['n_unassigned']!=0)&(result['n_assigned']!=0)]
 
     result.to_parquet(out_path,index=None)
     print('saved',out_path)
+    
     X = (
     result
     .groupby(["gridcell_id", "feature_name"], as_index=False)["n_unassigned"]
-    .mean()                     # or sum(), depending on biology
+    .mean()                    
     .pivot(
         index="gridcell_id",
         columns="feature_name",
@@ -189,24 +203,24 @@ for pfile in pfilelist:
     .fillna(0)
     )
 
-    adata = ad.AnnData(X)
+    adata_temp = ad.AnnData(X)
 
     obs = (
         result.drop_duplicates("gridcell_id")
         .set_index("gridcell_id")[["x_centroid", "y_centroid", "area"]]
     )
 
-    adata.obs = obs.loc[adata.obs_names]
-    adata.obs['sample'] = pfile
-    adata.obs['gridcell_id'] = adata.obs.index
-    adata.obs_names = [f"{pfile}_{cell_id}" for cell_id in adata.obs['gridcell_id']]
-    adata.obs['gridcell_id'] = adata.obs_names
-    adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
-    adata.layers["counts"] = adata.X.copy()
+    adata_temp.obs = obs.loc[adata_temp.obs_names]
+    adata_temp.obs['sample'] = pfile
+    adata_temp.obs['gridcell_id'] = adata_temp.obs.index
+    adata_temp.obs_names = [f"{pfile}_{cell_id}" for cell_id in adata_temp.obs['gridcell_id']]
+    adata_temp.obs['gridcell_id'] = adata_temp.obs_names
+    adata_temp.obsm["spatial"] = adata_temp.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
+    adata_temp.layers["counts"] = adata_temp.X.copy()
 
-    adata.write(f"data/unassigned_{pfile}_forMMC.h5ad")
+    adata_temp.write(f"data/unassigned_{pfile}_forMMC.h5ad")
 
-    adatas.append(adata)
+    adatas.append(adata_temp)
 
     sto = time.time()
     ct = round(sto-sti,6)
@@ -229,7 +243,7 @@ sc.tl.leiden(adata, resolution = 1)
 if not os.path.exists(save_path):
    os.makedirs(save_path)
 
-adata.write_h5ad(f'{save_path}AD_unassigned_adata.h5ad')
+adata.write_h5ad(f'{save_path}AD_{expe}_unassigned_adata.h5ad')
 
 
 print('Analysis Done')
