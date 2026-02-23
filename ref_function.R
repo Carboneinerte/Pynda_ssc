@@ -65,6 +65,12 @@ GetValidRegions = function(run_name){
   else if(run_name == 'SD1'){
     valid_regions = c("AMY", "BST", "CTX", "LHA", "SCH", "SI", "STR")
   }
+  else if(run_name == 'Unassigned_SD1'){
+    valid_regions = c("CTX", "THY", "STR", "WM")
+  }
+  else if(run_name == 'Unassigned_circa4'){
+    valid_regions = c("CTX", "THY", "STR", "WM")
+  }
   #log_print('Valid region names: Loaded')
   return (valid_regions)
 }

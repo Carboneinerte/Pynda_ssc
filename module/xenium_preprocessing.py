@@ -99,3 +99,14 @@ def add_annotations(adata, df):
         df[anno] = df['cell_id'].map(dict(zip(adata.obs['cell_id'], adata.obs[anno])))
     
     return df
+
+def add_annotations_unassigned(adata, df):
+    if 'gridcell_id' not in df.columns:
+        df['gridcell_id'] = df.index
+    
+    list_anno = list_annotations()
+    list_anno = [anno for anno in list_anno if anno in adata.obs.columns]
+    for anno in list_anno:
+        df[anno] = df['gridcell_id'].map(dict(zip(adata.obs['gridcell_id'], adata.obs[anno])))
+    
+    return df

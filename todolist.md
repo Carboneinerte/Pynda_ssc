@@ -6,6 +6,7 @@
 
 
 # Metacycle and CircaComapre
+- [ ] Add step to check if "ZT" column exist in data
 - [X] Implement Circacompare, compare with metacycle
 - [ ] Implement possibility to continue an interrupted analysis (by scanning which analysis file already exist and continue the analysis once a file is missing)
 - [ ] Add possiblity to run the summary files analysis separately
