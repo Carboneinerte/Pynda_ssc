@@ -2,17 +2,24 @@ import pandas as pd
 import scanpy as sc
 import os
 from module.misc import list_annotations
-
 import pandas as pd
 import scanpy as sc
 import os
 from module.misc import list_annotations
 
-def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir, remove_noise=False):
+def import_xenium(dir, dir_notebook, samples_ids, name_dir, trans_min: int = 40, trans_max: int = 4000, remove_noise=False, MMC = False):
+    '''
+    dir (str) : folder containing raw Xenium files
+    dir_notebook (str)
+    samples_ids (str)
+    name_dir (str)
+    remove_noise (bool) : remove genes below noise level from a list
+    MMC (bool)
+    '''
     adatas = []
-    for sample, sample_id in zip(samples, samples_ids):
-        adata = sc.read_10x_h5(f"{dir}/{sample}/cell_feature_matrix.h5")
-        df = pd.read_csv(f"{dir}/{sample}/cells.csv.gz")
+    for sample_id in samples_ids:
+        adata = sc.read_10x_h5(f"{dir}/{sample_id}/cell_feature_matrix.h5")
+        df = pd.read_csv(f"{dir}/{sample_id}/cells.csv.gz")
         df.set_index(adata.obs_names, inplace=True)
         adata.obs = df.copy()
         adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
@@ -27,9 +34,8 @@ def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir, remove_nois
             adata = adata[:, mask].copy()
             
         all_cells = adata.shape[0]
-        # sc.pp.calculate_qc_metrics(adata,  percent_top=(10, 20, 50, 150), inplace=True)
-        sc.pp.filter_cells(adata, max_counts=4000) ## Possible filter to remove cells with too many transcripts
-        sc.pp.filter_cells(adata, min_counts=40) ## Filter cells with less than 40 transcripts
+        sc.pp.filter_cells(adata, max_counts=trans_max) ## Possible filter to remove cells with too many transcripts
+        sc.pp.filter_cells(adata, min_counts=trans_min) ## Filter cells with less than 40 transcripts
         sc.pp.filter_genes(adata, min_cells=5) ## Filter genes expressed in less than 5 cells
         adata.obs_names = [f"{sample_id}_{cell_id}" for cell_id in adata.obs_names]
         adata.obs['cell_id'] = adata.obs_names
@@ -37,13 +43,13 @@ def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir, remove_nois
         
         adatas.append(adata)
         # adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
-        print(f"Sample {sample} done")
+        print(f"Sample {sample_id} done")
+        if MMC == True:
+            if not os.path.exists(f"{dir_notebook}/h5ad/{name_dir}/"):
+                os.makedirs(f"{dir_notebook}/h5ad/{name_dir}/")
+            adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
 
-        if not os.path.exists(f"{dir_notebook}/h5ad/{name_dir}/"):
-            os.makedirs(f"{dir_notebook}/h5ad/{name_dir}/")
-        adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample}_forMMC.h5ad")
-
-    print(f"Read all {len(samples)} samples")
+    print(f"Read all {len(samples_ids)} samples")
 
     ### merge all the anndata objects into a single object
     adata = adatas[0].concatenate(adatas[1:], index_unique=None)
@@ -51,10 +57,17 @@ def import_xenium(dir, dir_notebook, samples, samples_ids, name_dir, remove_nois
     ### Add a sample column to the metadata
     adata.obs['sample'] = adata.obs_names.map(lambda name: name.split('_')[0])
     # samples = adata.obs['sample'].unique()
-
+    adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
     return adata
 
-def mmc_merge(adata, dir_notebook, name_dir):
+def mmc_merge(adata, dir_notebook: str, name_dir: str):
+    '''
+    Merge MMC correlation mapping from {dir_notebook}/Correlation_Mapping/ folder
+    MMC files names should start with {name_dir} 
+    adata : AnnData object
+    dir_notebook : string
+    name_dir : string
+    '''
 
     import glob
     dir_corr = f'{dir_notebook}/Correlation_Mapping/'
@@ -88,8 +101,12 @@ def mmc_merge(adata, dir_notebook, name_dir):
         print('Empty input. Please check the names of files in Correlation_Mapping folder')
     return adata
 
-
 def add_annotations(adata, df):
+    '''
+    Add annotations from adata.obs to matrix of gene expression (usually called 'df').
+    List of annotations can be changed in module/misc.py
+    '''
+
     if 'cell_id' not in df.columns:
         df['cell_id'] = df.index
     
@@ -101,6 +118,11 @@ def add_annotations(adata, df):
     return df
 
 def add_annotations_unassigned(adata, df):
+    '''
+    Add annotations from adata.obs to matrix of gene expression (usually called 'df').
+    List of annotations can be changed in module/misc.py
+    '''
+
     if 'gridcell_id' not in df.columns:
         df['gridcell_id'] = df.index
     

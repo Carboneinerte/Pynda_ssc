@@ -18,13 +18,15 @@ def cell_class():
         'VLMC': 'Vascular',
         'ABC' : 'Vascular',
         'Astro TE': 'Glial',
+        'Astro NT': 'Glial',
         'Oligodendrocyte': 'Glial',
         'Choroid' : 'Ependymal',
         'CHOR' : 'Ependymal',
         'SMC' : 'Vascular',
         "Astro_TE" : "Glial",
         "Astro_NT" : "Glial",
-        "Hypendymal" : "Ependymal"
+        "Astrocyte" : 'Glial',
+        "Hypendymal" : "Ependymal",
         }
     return dict_temp
 
@@ -45,13 +47,12 @@ def sample_name_import(name_experiment):
         'all-samples-C3' : ["3159-4", "3161-3"],
         'all-samples-C123' : ["3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
         'all-samples-combined' :["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2","3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
-
+        "liver-cancer" : ['hLiver-cancer','hLiver-nondiseased']
         }
     
-    samples = samples_ids = dict_exp_name[name_experiment]
+    samples_ids = dict_exp_name[name_experiment]
 
-    return samples, samples_ids
-
+    return samples_ids
 
 def genes_list(type_):
     
@@ -390,7 +391,6 @@ def genes_list(type_):
     }
     
     return dict_list[type_]
-
 
 def prot_name_annot():
     df_annotation = pd.read_csv('Mouse5K_metadata.csv')
