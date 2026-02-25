@@ -11,7 +11,7 @@ from IPython.display import clear_output
 
 
 ### Automatic initial annotation
-def automatic_initial_annotation(adata_spatial, cluster_col):
+def automatic_initial_annotation(adata_spatial, cluster_col: str):
     cont_tab = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:subclass_name'], normalize="index")
     cont_tab_class = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:class_name'], normalize="index")
     max_col_dict = cont_tab.T.idxmax(axis=0).to_dict()
@@ -33,7 +33,9 @@ def automatic_initial_annotation(adata_spatial, cluster_col):
     return adata_spatial
 
 
-def auto_subclustering2(adata_to_sub, all_types = 'all', Clusters_to_use = 'cell_type_newnum_auto', resolution = 0.1):
+def auto_subclustering2(adata_to_sub, all_types: list = ['all'], Clusters_to_use: str = 'cell_type_newnum_auto', resolution: float = 0.1):
+    '''
+    '''
     
     adata_filter = adata_to_sub
     
@@ -95,8 +97,11 @@ def auto_subclustering2(adata_to_sub, all_types = 'all', Clusters_to_use = 'cell
 
 ########
 
-def cluster_table(adata_to_use, Clusters_to_use = 'cell_type_newnum_auto_sub', sort_order = 'Cell Count', sort_ascend = False):
+def cluster_table(adata_to_use, Clusters_to_use: str = 'cell_type_newnum_auto_sub', sort_order: str = 'Cell Count', sort_ascend: bool = False):
+    '''
+    Create table detailing clusters population, annotation and confidence coefficient
 
+    '''
     adata_to_use.obs[Clusters_to_use] = adata_to_use.obs[Clusters_to_use].astype(int)
 
     bar = progressbar.ProgressBar(maxval=len(adata_to_use.obs[Clusters_to_use].unique()), \
