@@ -178,7 +178,7 @@ def cluster_plot(adata_to_plot,
             cluster_to_map2 = adata_sel.obs[cluster_to_use].unique()
             for cluster_id in cluster_to_map2:
                 cluster_data = adata_sel.obs[adata_sel.obs[cluster_to_use] == cluster_id]
-                if cluster_to_map != 'all':
+                if cluster_to_map != ['all']:
                     colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
                 else:
                     colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters

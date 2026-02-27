@@ -2,7 +2,24 @@ import pandas as pd
 import scanpy as sc
 import numpy as np
 import os
+from datetime import datetime
+from matplotlib.pyplot import rc_context
 from module.misc import list_annotations
+from module.dataviz_analysis import cluster_plot
+
+def create_folders(dir_notebook, name_dir):
+    if not os.path.exists(f"{dir_notebook}/csv/{name_dir}/"):
+        os.makedirs(f"{dir_notebook}/csv/{name_dir}/")
+        print("csv folder created")
+    if not os.path.exists(f"{dir_notebook}/h5ad/{name_dir}/"):
+        os.makedirs(f"{dir_notebook}/h5ad/{name_dir}/")
+        print("h5ad folder created")
+    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/"):
+        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/")
+        print('Analysis folder created')
+    if not os.path.exists(f"{dir_notebook}/plot/{name_dir}/"):
+        os.makedirs(f"{dir_notebook}/plot/{name_dir}/")
+        print('Plotfolder created')
 
 def undernoise_list(dir:str, dir_notebook:str, samples_ids:list, name_dir:str):
 
@@ -51,6 +68,8 @@ def import_xenium(dir, dir_notebook, samples_ids, name_dir, trans_min: int = 40,
     remove_noise (bool) : remove genes below noise level from a list
     MMC (bool)
     '''
+    create_folders(dir_notebook, name_dir)
+
     adatas = []
     
     if remove_noise == True:
@@ -173,3 +192,58 @@ def add_annotations_unassigned(adata, df):
     return df
 
 
+def normalization_scanpy(adata):
+    print(f"Start")
+    adata.layers["counts"] = adata.X.copy()
+    sc.pp.normalize_total(adata, inplace=True)
+    print(f"Normalize done")
+    sc.pp.log1p(adata)
+    print(f"log1p done")
+
+    return adata
+
+def clustering_scanpy(adata, pca_compo: int = 10, leiden_resolution: float = 0.7, ):
+    print(f"Start Clustering")
+    sc.pp.pca(adata, n_comps = pca_compo)
+    print(f"PCA done")
+    sc.pl.pca_variance_ratio(adata, n_pcs=pca_compo, log=False)
+    sc.pl.pca(
+        adata,
+        color=["sample","sample"],
+        dimensions=[(0, 1), (2, 3)],
+        ncols=2,
+        size=1,
+    )
+    sc.pp.neighbors(adata)
+    print(f"Neighbors done")
+    sc.tl.umap(adata, min_dist = 1)
+    print(f"UMAP done")
+
+    sc.tl.leiden(adata, resolution = leiden_resolution) ### Use a higher resolution value to obtain more clusters. They can be adjusted/merged/subclustered later
+    print('End of clustering')
+    with rc_context({"figure.figsize": (10, 10)}):
+        sc.pl.umap(
+            adata,
+            color="leiden",
+            add_outline=False,
+            legend_loc="on data",
+            legend_fontsize=12,
+            legend_fontoutline=2,
+            frameon=False,
+            palette="tab20b",
+            size = 1
+        )
+
+    
+
+    return adata
+
+def norm_to_cluster(adata, dir_notebook, name_dir,pca_compo:int = 10,leiden_resolution:float = 0.7):
+    
+    adata = normalization_scanpy(adata)
+    
+    adata = clustering_scanpy(adata,pca_compo,leiden_resolution)
+
+    cluster_plot(adata, dir_notebook, name_dir, cluster_to_use = "leiden",cluster_to_map=['all'])
+
+    return adata
