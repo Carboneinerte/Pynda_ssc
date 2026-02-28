@@ -59,7 +59,15 @@ def undernoise_list(dir:str, dir_notebook:str, samples_ids:list, name_dir:str):
     list_noise = list(set_undernoise)
     return list_noise
 
-def import_xenium(dir, dir_notebook, samples_ids, name_dir, trans_min: int = 40, trans_max: int = 4000, remove_noise=False, MMC = False):
+def import_xenium(dir:str,
+                  dir_notebook: str,
+                  samples_ids:  list,
+                  name_dir:     str,
+                  trans_min:    int = 40,
+                  trans_max:    int = 4000,
+                  remove_noise: bool = False,
+                  MMC:          bool = False,
+                  use_cell_list:bool = False):
     '''
     dir (str) : folder containing raw Xenium files
     dir_notebook (str)
@@ -85,12 +93,20 @@ def import_xenium(dir, dir_notebook, samples_ids, name_dir, trans_min: int = 40,
         adata.obs = df.copy()
         adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
         adata.layers["counts"] = adata.X.copy()
+        all_cells = adata.shape[0]
 
         if remove_noise == True:
             mask = [gene not in list_noise for gene in adata.var_names]
             adata = adata[:, mask].copy()
-            
-        all_cells = adata.shape[0]
+
+        if use_cell_list == True:
+            try:
+                tmp = pd.read_csv(f'{dir_notebook}/coordinates/whole_section/{sample_id}_Whole-section_cells_stats.csv', comment = '#')
+                tmp_list = list(tmp['Cell ID'])
+                adata = adata[adata.obs['cell_id'].isin(tmp_list)]
+            except:
+                print("Warning: No cell list found")    
+        
         sc.pp.filter_cells(adata, max_counts=trans_max) ## Possible filter to remove cells with too many transcripts
         sc.pp.filter_cells(adata, min_counts=trans_min) ## Filter cells with less than 40 transcripts
         sc.pp.filter_genes(adata, min_cells=5) ## Filter genes expressed in less than 5 cells
