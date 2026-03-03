@@ -1,3 +1,5 @@
+import pandas as pd
+
 def list_annotations():
     list_anno = [
         "sample","ZT", "Genotype", "run", "cell_type_final", "region_automap_name","transcript_counts",
@@ -30,7 +32,7 @@ def cell_class():
         }
     return dict_temp
 
-def sample_name_import(name_experiment):
+def sample_name_import(name_experiment:str):
     
     dict_exp_name = {
         'SD1' : ["SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21",],
@@ -54,7 +56,7 @@ def sample_name_import(name_experiment):
 
     return samples_ids
 
-def genes_list(type_):
+def genes_list(type_:str):
     
     dict_list = {
     'clock' : ['Arntl','Clock','Cry1','Cry2','Nr1d1',"Per1",'Per2','Per3','Rora','Rorb','Rorc',"Npas2"],

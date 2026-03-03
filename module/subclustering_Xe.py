@@ -11,7 +11,8 @@ from IPython.display import clear_output
 
 
 ### Automatic initial annotation
-def automatic_initial_annotation(adata_spatial, cluster_col: str):
+def automatic_initial_annotation(adata_spatial:sc.AnnData,
+                                 cluster_col: str):
     cont_tab = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:subclass_name'], normalize="index")
     cont_tab_class = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:class_name'], normalize="index")
     max_col_dict = cont_tab.T.idxmax(axis=0).to_dict()
@@ -33,7 +34,10 @@ def automatic_initial_annotation(adata_spatial, cluster_col: str):
     return adata_spatial
 
 
-def auto_subclustering2(adata_to_sub, all_types: list = ['all'], Clusters_to_use: str = 'cell_type_newnum_auto', resolution: float = 0.1):
+def auto_subclustering2(adata_to_sub:sc.AnnData,
+                        all_types: list = ['all'],
+                        Clusters_to_use: str = 'cell_type_newnum_auto',
+                        resolution_leiden: float = 0.1):
     '''
     '''
     
@@ -63,7 +67,7 @@ def auto_subclustering2(adata_to_sub, all_types: list = ['all'], Clusters_to_use
         sc.pp.pca(adata_subcluster)
         sc.pp.neighbors(adata_subcluster)
         sc.tl.umap(adata_subcluster)
-        sc.tl.leiden(adata_subcluster, resolution = 0.1)
+        sc.tl.leiden(adata_subcluster, resolution = resolution_leiden)
 
         clustering_method = 'leiden'
         n = len(adata_subcluster.obs[clustering_method].unique())
@@ -97,7 +101,10 @@ def auto_subclustering2(adata_to_sub, all_types: list = ['all'], Clusters_to_use
 
 ########
 
-def cluster_table(adata_to_use, Clusters_to_use: str = 'cell_type_newnum_auto_sub', sort_order: str = 'Cell Count', sort_ascend: bool = False):
+def cluster_table(adata_to_use: sc.AnnData,
+                  Clusters_to_use: str = 'cell_type_newnum_auto_sub',
+                  sort_order: str = 'Cell Count',
+                  sort_ascend: bool = False):
     '''
     Create table detailing clusters population, annotation and confidence coefficient
 
@@ -152,9 +159,8 @@ def cluster_table(adata_to_use, Clusters_to_use: str = 'cell_type_newnum_auto_su
 
 
 ######
-from module.misc import cell_class
 
-def cell_class_annotation(adata):
+def cell_class_annotation(adata: sc.AnnData):
     from module.misc import cell_class
     adata.obs['cell_class'] = 'Neuronal'
 
@@ -169,7 +175,8 @@ def cell_class_annotation(adata):
 import progressbar
 from module.misc import genes_list
 
-def circascore_annot(adata, df):
+def circascore_annot(adata:sc.AnnData,
+                     df: pd.DataFrame):
     '''
     Create annotation based on the expression of clock genes in each cells
     '''

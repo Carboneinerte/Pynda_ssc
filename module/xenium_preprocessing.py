@@ -2,6 +2,7 @@ import pandas as pd
 import scanpy as sc
 import numpy as np
 import os
+import glob
 from datetime import datetime
 from matplotlib.pyplot import rc_context
 from module.misc import list_annotations
@@ -134,7 +135,7 @@ def import_xenium(dir:str,
     adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
     return adata
 
-def mmc_merge(adata, dir_notebook: str, name_dir: str):
+def mmc_merge(adata: sc.AnnData, dir_notebook: str, name_dir: str):
     '''
     Merge MMC correlation mapping from {dir_notebook}/Correlation_Mapping/ folder
     MMC files names should start with {name_dir} 
@@ -143,7 +144,6 @@ def mmc_merge(adata, dir_notebook: str, name_dir: str):
     name_dir : string
     '''
 
-    import glob
     dir_corr = f'{dir_notebook}/Correlation_Mapping/'
 
     list_files = glob.glob(dir_corr + f'{name_dir}*')
@@ -175,7 +175,7 @@ def mmc_merge(adata, dir_notebook: str, name_dir: str):
         print('Empty input. Please check the names of files in Correlation_Mapping folder')
     return adata
 
-def add_annotations(adata, df):
+def add_annotations(adata: sc.AnnData, df):
     '''
     Add annotations from adata.obs to matrix of gene expression (usually called 'df').
     List of annotations can be changed in module/misc.py
@@ -208,7 +208,7 @@ def add_annotations_unassigned(adata, df):
     return df
 
 
-def normalization_scanpy(adata):
+def normalization_scanpy(adata:sc.AnnData):
     print(f"Start")
     adata.layers["counts"] = adata.X.copy()
     sc.pp.normalize_total(adata, inplace=True)
@@ -218,7 +218,10 @@ def normalization_scanpy(adata):
 
     return adata
 
-def clustering_scanpy(adata, pca_compo: int = 10, leiden_resolution: float = 0.7, ):
+def clustering_scanpy(adata: sc.AnnData,
+                      pca_compo: int = 10,
+                      leiden_resolution: float = 0.7
+                      ):
     print(f"Start Clustering")
     sc.pp.pca(adata, n_comps = pca_compo)
     print(f"PCA done")
@@ -254,7 +257,12 @@ def clustering_scanpy(adata, pca_compo: int = 10, leiden_resolution: float = 0.7
 
     return adata
 
-def norm_to_cluster(adata, dir_notebook, name_dir,pca_compo:int = 10,leiden_resolution:float = 0.7):
+def norm_to_cluster(adata: sc.AnnData,
+                    dir_notebook: str,
+                    name_dir: str,
+                    pca_compo:int = 10,
+                    leiden_resolution:float = 0.7
+                    ):
     
     adata = normalization_scanpy(adata)
     

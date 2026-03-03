@@ -11,9 +11,9 @@ import seaborn as sns
 import pytz
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import scanpy as sc
 
-
-def umap_plot_indi_multi(adata_to_plot,
+def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
                          name_dir : str,
                          dir_notebook : str,
                          cluster_to_use : str = 'cell_type_newnum_final',

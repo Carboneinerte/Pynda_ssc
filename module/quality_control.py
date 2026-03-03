@@ -4,7 +4,10 @@ import matplotlib.pyplot as plt
 
 
 
-def plot_mcc_density (sample_1, save_plot = False, path_to_plot = 'plot', save_name = 'CC_mmc.png'):
+def plot_mcc_density (sample_1: list,
+                      save_plot: bool = False,
+                      path_to_plot: str = 'plot',
+                      save_name : str = 'CC_mmc.png'):
     for sample in sample_1:
         df = pd.read_csv(f'D:\Jupyter_Notebook\Xenium_Jupyter_notebook\Correlation_Mapping\{sample}_CorrelationMapping.csv', comment = "#")
         df['sample'] = df['cell_id'].map(lambda name: name.split('_')[0])
@@ -33,7 +36,13 @@ def plot_mcc_density (sample_1, save_plot = False, path_to_plot = 'plot', save_n
         plt.savefig(f'{path_to_plot}/{save_name}')
 
 
-def desc_metrics(samples_ids, path_to_data, run_name = 'run_name', reference = True, plot_average = True, path_to_plot = 'plot', save_plot = False):
+def desc_metrics(samples_ids:list,
+                 path_to_data:str,
+                 run_name:str,
+                 reference:bool = True,
+                 plot_average:bool = True,
+                 path_to_plot:str = 'plot',
+                 save_plot: bool = False):
     if reference:
         reference_dataset = pd.read_csv('data/reference_dataset.csv')
     
@@ -78,7 +87,17 @@ def desc_metrics(samples_ids, path_to_data, run_name = 'run_name', reference = T
         fig.savefig(f'{path_to_plot}/{run_name}_QC.svg')
 
 
-def desc_metrics_double(samples_ids_1, samples_ids_2, path_to_data_1, path_to_data_2, run_name = 'run_name', reference = True, plot_average = True,  path_to_plot = 'plot', save_plot = False):
+def desc_metrics_double(samples_ids_1:list,
+                        samples_ids_2:list,
+                        path_to_data_1:str,
+                        path_to_data_2:str,
+                        run_name:str,
+                        reference:bool = True,
+                        plot_average: bool = True,
+                        path_to_plot:str = 'plot',
+                        save_plot:bool = False
+                        ):
+    
     reference_dataset = pd.read_csv('data/reference_dataset.csv')
     
     parameters_to_plot = ['region_area', 'total_high_quality_decoded_transcripts','fraction_transcripts_decoded_q20',

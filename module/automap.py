@@ -26,7 +26,8 @@ import numpy as np
 
 ###
 
-def knn_mst_clustering(data, cell_type, k=10, std_threshold=2, min_component_size=100):
+def knn_mst_clustering(data:pd.DataFrame,
+                       cell_type, k=10, std_threshold=2, min_component_size=100):
     # Filter the data for the selected cell type
     cell_data = data[data['knn_celltype'] == cell_type]
     coordinates = cell_data[['x_centroid', 'y_centroid']].values
