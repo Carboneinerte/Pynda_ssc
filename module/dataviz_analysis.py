@@ -1,5 +1,8 @@
 ### import necessary libraries
+import os
 from datetime import datetime
+today = datetime.today().strftime('%Y-%m-%d')
+
 import geopandas as gpd
 from IPython.display import display
 import matplotlib as mpl
@@ -61,8 +64,13 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.show()
         
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
-        
+            try:
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+
+            except:
+                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+
     ####
     else:
         cell_type_unique = adata_to_plot.obs[cluster_to_use].unique()
@@ -92,8 +100,11 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.legend(markerscale=20, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
         plt.show()
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
-    
+            try:
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
+            except:
+                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
 
 def cluster_plot(adata_to_plot,
                  name_dir,
@@ -133,6 +144,7 @@ def cluster_plot(adata_to_plot,
     'cell_type_newnum_final':'cell_type_final',
     'cell_class_newnum': 'cell_class',
     'region_automap_num':'region_automap_name',
+    'region_manual_map_num' : 'region_manual_map',
     "leiden":"leiden",
     "kmeans":"kmeans",
     "circascore":"circascore",
@@ -152,13 +164,20 @@ def cluster_plot(adata_to_plot,
         num_clusters = len(adata_to_plot.obs[cluster_to_use].astype(int).unique())
         palette = sns.color_palette(cmap_, n_colors=num_clusters +1)
         adata_to_plot.obs['leiden_colors'] = adata_to_plot.obs[cluster_to_use].astype(int).apply(lambda x: palette[x])
+        samples_ids = adata_to_plot.obs['sample'].unique().sort_values()
 
         # Map all cells
         b = int(adata_to_plot.obs['sample'].nunique() / 3)
         if b == 0:
             b=1
-        fig, axs = plt.subplots(b,3,
-                                figsize=(15,25))
+        if len(samples_ids) <= 3:
+            a= len(samples_ids)
+            b=0
+        else:
+            a=3
+            
+        _, axs = plt.subplots(b,a,
+                                figsize=(15,6))
         axs = axs.flatten()# Mapping of clusters
 
         if cluster_to_map != ['all']:
@@ -172,7 +191,7 @@ def cluster_plot(adata_to_plot,
                 dict_temp = {cluster_to_map[l]:color_samples[l]}
                 clusters_plot.update(dict_temp)    
 
-        samples_ids = adata_to_plot.obs['sample'].unique()
+        
         for idx, sample in enumerate(samples_ids):
             adata_sel = adata_to_plot[(adata_to_plot.obs['sample'] == sample)]
             cluster_to_map2 = adata_sel.obs[cluster_to_use].unique()
@@ -182,20 +201,23 @@ def cluster_plot(adata_to_plot,
                     colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
                 else:
                     colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
-                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.05, marker = 'o', label=cluster_data[label_to_use].unique()[0])
+                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.01, marker = 'o', label=cluster_data[label_to_use].unique()[0])
                 axs[idx].set_title(f"Sample {sample}")
                 axs[idx].xaxis.set_tick_params(labelbottom=False)
                 axs[idx].yaxis.set_tick_params(labelleft=False)
                 axs[idx].set_aspect('equal', adjustable='box')
-        plt.legend(markerscale=50, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
+        # plt.legend(markerscale=5, scatterpoints=10,fontsize='small', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, mode="expand", ncol =3)
+        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.3)
         plt.show()
         
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+            try:
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+            except:
+                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
 
-
-def polygonplot_dataprep(adata_main,
+def polygonplot_dataprep(adata_main: sc.AnnData,
                          sample_to_plot : str,
                          dir_notebook : str,
                          cluster_to_use : str = 'cell_type_newnum_final',
@@ -218,7 +240,7 @@ def polygonplot_dataprep(adata_main,
     :param cmap_: Will be used for the polygons colors
     :type cmap_: str
     '''
-
+    
     ### Generate a color palette for the clusters - to make color stay consistent across samples
     num_clusters = len(adata_main.obs[cluster_to_use].astype(int).unique())
     palette = sns.color_palette(cmap_, n_colors=num_clusters)
@@ -271,8 +293,10 @@ def polygonplot_dataprep(adata_main,
 
 
 
-def polygonplot_plot(df,
-                     cells_geo,
+def polygonplot_plot(df: pd.DataFrame,
+                     cells_geo:gpd.GeoDataFrame,
+                     dir_notebook: str,
+                     name_dir: str,            
                      cluster_to_use : str = 'cell_type_newnum_final',
                      gene_ : str = None,
                      region_ : str = None,
@@ -405,16 +429,26 @@ def polygonplot_plot(df,
             bbox_to_anchor=(1, 0.5), title='Cell Type')
 
     if save_plot:
-        now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
-        tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
-    
+        try:
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
+        except:
+            os.mkdirs()
     plt.show()
 
 
 
-def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, region_only = None,
-                               coord_ = None, cmap_ = 'inferno', save_plot = False):
+def polygonplot_plot_gradient(
+        df, cells_geo,
+        dir_notebook: str,
+        name_dir: str,
+        gene_ = None,
+        region_ = None,
+        region_only = None,
+        coord_ = None,
+        cmap_ = 'inferno',
+        save_plot = False
+        ):
+    
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
@@ -492,15 +526,15 @@ def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, regio
 
     # cbar.set_label(gene_, size=20)
 
-    fig.colorbar()
+    # fig.colorbar()
 
     ##### Add the custom legend
     ax.legend(handles=legend_patches,     loc='center left', 
         bbox_to_anchor=(1, 0.5), title='Cell Type')
 
-    if save_plot == True:
-        now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
-        tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=300, transparent=True)
-    
+    if save_plot:
+        try:
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
+        except:
+            os.mkdirs()
     plt.show()

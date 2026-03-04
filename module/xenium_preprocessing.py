@@ -60,7 +60,7 @@ def undernoise_list(dir:str, dir_notebook:str, samples_ids:list, name_dir:str):
     list_noise = list(set_undernoise)
     return list_noise
 
-def import_xenium(dir:str,
+def import_xenium(dir:          str,
                   dir_notebook: str,
                   samples_ids:  list,
                   name_dir:     str,
@@ -80,7 +80,6 @@ def import_xenium(dir:str,
     create_folders(dir_notebook, name_dir)
 
     adatas = []
-    
     if remove_noise == True:
         print("## Noise evaluation ##")
         list_noise = undernoise_list(dir, dir_notebook, samples_ids, name_dir)
@@ -135,7 +134,10 @@ def import_xenium(dir:str,
     adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
     return adata
 
-def mmc_merge(adata: sc.AnnData, dir_notebook: str, name_dir: str):
+def mmc_merge(adata: sc.AnnData,
+              dir_notebook: str,
+              name_dir: str
+              ):
     '''
     Merge MMC correlation mapping from {dir_notebook}/Correlation_Mapping/ folder
     MMC files names should start with {name_dir} 
