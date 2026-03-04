@@ -44,6 +44,9 @@ pip install -r requirements.txt
 - metrics_summary.csv
 - transcripts.parquet
 
+## Gene lists
+
+In module/misc, you can define your own list of genes to use in different functions (heatmap, violin plot, etc.)
 
 
 ## reload module
