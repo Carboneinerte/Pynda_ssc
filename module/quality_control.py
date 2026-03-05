@@ -1,15 +1,17 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-
+from module.config_local import dir_notebook, dir_raw
 
 
 def plot_mcc_density (sample_1: list,
+                      name_dir: str,
                       save_plot: bool = False,
-                      path_to_plot: str = 'plot',
-                      save_name : str = 'CC_mmc.png'):
+                      save_name : str = 'CC_mmc.png'
+                      ):
     for sample in sample_1:
-        df = pd.read_csv(f'D:\Jupyter_Notebook\Xenium_Jupyter_notebook\Correlation_Mapping\{sample}_CorrelationMapping.csv', comment = "#")
+        print(sample)
+        df = pd.read_csv(f'D:/Jupyter_Notebook/Xenium_Jupyter_notebook/Correlation_Mapping/{name_dir}_{sample}_CorrelationMapping.csv', comment = "#")
         df['sample'] = df['cell_id'].map(lambda name: name.split('_')[0])
         df_temp = df.filter(['sample', 'subclass_correlation_coefficient'])
         if "df_all" not in locals():
@@ -33,16 +35,15 @@ def plot_mcc_density (sample_1: list,
         save_name = f'CC_{sample_1[0]}.png'
 
     if save_plot:
-        plt.savefig(f'{path_to_plot}/{save_name}')
-
+        plt.savefig(f'{dir_notebook}/plot/{name_dir}/{save_name}')
 
 def desc_metrics(samples_ids:list,
-                 path_to_data:str,
-                 run_name:str,
-                 reference:bool = True,
+                 name_dir:str,
+                 path_to_data:str = dir_raw,
+                 reference:bool = False,
                  plot_average:bool = True,
-                 path_to_plot:str = 'plot',
-                 save_plot: bool = False):
+                 save_plot: bool = False
+                 ):
     if reference:
         reference_dataset = pd.read_csv('data/reference_dataset.csv')
     
@@ -84,18 +85,15 @@ def desc_metrics(samples_ids:list,
         ax.tick_params(axis = 'x', rotation = 90, direction = 'in', pad = -80)
 
     if save_plot:
-        fig.savefig(f'{path_to_plot}/{run_name}_QC.svg')
+        fig.savefig(f'{dir_notebook}/plot/{name_dir}/{name_dir}_QC.svg')
 
-
-def desc_metrics_double(samples_ids_1:list,
-                        samples_ids_2:list,
-                        path_to_data_1:str,
-                        path_to_data_2:str,
-                        run_name:str,
-                        reference:bool = True,
+def desc_metrics_double(samples_ids_1: list,
+                        samples_ids_2: list,
+                        name_dir: str,
+                        dir_raw: str = dir_raw,
+                        reference: bool = False,
                         plot_average: bool = True,
-                        path_to_plot:str = 'plot',
-                        save_plot:bool = False
+                        save_plot: bool = False
                         ):
     
     reference_dataset = pd.read_csv('data/reference_dataset.csv')
@@ -105,7 +103,7 @@ def desc_metrics_double(samples_ids_1:list,
                             'fraction_transcripts_assigned', 'median_genes_per_cell', 'median_transcripts_per_cell' ]
     
     for sample in samples_ids_1:
-        with open(f"{path_to_data_1}\{sample}\metrics_summary.csv", 'r', encoding='utf-8') as file:
+        with open(f"{dir_raw}/{sample}/metrics_summary.csv", 'r', encoding='utf-8') as file:
             file_content_1 = pd.read_csv(file)
             
             if 'files_content_1' in locals():
@@ -114,7 +112,7 @@ def desc_metrics_double(samples_ids_1:list,
                 files_content_1 = pd.DataFrame(file_content_1)
 
     for sample in samples_ids_2:
-        with open(f"{path_to_data_2}\{sample}\metrics_summary.csv", 'r', encoding='utf-8') as file:
+        with open(f"{dir_raw}/{sample}/metrics_summary.csv", 'r', encoding='utf-8') as file:
             file_content_2 = pd.read_csv(file)
             
             if 'files_content_2' in locals():
@@ -145,6 +143,4 @@ def desc_metrics_double(samples_ids_1:list,
         ax.set_title(parameter)
         ax.tick_params(axis = 'x', rotation = 90, direction = 'in', pad = -60)
     if save_plot:
-        fig.savefig(f'{path_to_plot}/{run_name}_QC.svg')
-
-
+        fig.savefig(f'{dir_notebook}/plot/{name_dir}/{name_dir}_QC.svg')

@@ -8,7 +8,12 @@ from matplotlib.pyplot import rc_context
 from module.misc import list_annotations
 from module.dataviz_analysis import cluster_plot
 
-def create_folders(dir_notebook, name_dir):
+from module.config_local import dir_notebook, dir_raw
+
+
+def create_folders(name_dir:str,
+                   dir_notebook: str = dir_notebook
+                   ):
     if not os.path.exists(f"{dir_notebook}/csv/{name_dir}/"):
         os.makedirs(f"{dir_notebook}/csv/{name_dir}/")
         print("csv folder created")
@@ -22,20 +27,16 @@ def create_folders(dir_notebook, name_dir):
         os.makedirs(f"{dir_notebook}/plot/{name_dir}/")
         print('Plotfolder created')
 
-def undernoise_list(dir:str, dir_notebook:str, samples_ids:list, name_dir:str):
+def undernoise_list(samples_ids:list,
+                    name_dir:str,
+                    dir_raw:str = dir_raw,
+                    dir_notebook:str = dir_notebook,
+                    ):
 
     for idx, sample in enumerate(samples_ids):
         print('Start Sample :', sample)
         print(idx+1," / ", len(samples_ids))
-        if sample.split('-')[0]=="SD1":
-            df = pd.read_parquet(f'E:/Xenium_SD/{sample}/transcripts.parquet',
-                            filters=[("qv",">=",20)]
-                            )
-        else:
-            df = pd.read_parquet(f'{dir}/{sample}/transcripts.parquet',
-                            filters=[("qv",">=",20)]
-                            )
-
+        df = pd.read_parquet(f'{dir_raw}/{sample}/transcripts.parquet',filters=[("qv",">=",20)])
         
         data = pd.DataFrame({'feature_name': df.feature_name.value_counts().index,'count' : df.feature_name.value_counts()})
         data.sort_index(inplace=True)
@@ -60,35 +61,35 @@ def undernoise_list(dir:str, dir_notebook:str, samples_ids:list, name_dir:str):
     list_noise = list(set_undernoise)
     return list_noise
 
-def import_xenium(dir:          str,
-                  dir_notebook: str,
-                  samples_ids:  list,
+def import_xenium(samples_ids:  list,
                   name_dir:     str,
+                  dir_raw:      str = dir_raw,
+                  dir_notebook: str = dir_notebook,
                   trans_min:    int = 40,
                   trans_max:    int = 4000,
                   remove_noise: bool = False,
                   MMC:          bool = False,
                   use_cell_list:bool = False):
     '''
-    dir (str) : folder containing raw Xenium files
+    dir_raw (str) : folder containing raw Xenium files
     dir_notebook (str)
     samples_ids (str)
     name_dir (str)
     remove_noise (bool) : remove genes below noise level from a list
     MMC (bool)
     '''
-    create_folders(dir_notebook, name_dir)
+    create_folders(name_dir)
 
     adatas = []
     if remove_noise == True:
         print("## Noise evaluation ##")
-        list_noise = undernoise_list(dir, dir_notebook, samples_ids, name_dir)
+        list_noise = undernoise_list(samples_ids, name_dir)
         print(f"Will exclude {len(list_noise)} genes")
     print(" ")
     print("## Start importation ##")
     for sample_id in samples_ids:
-        adata = sc.read_10x_h5(f"{dir}/{sample_id}/cell_feature_matrix.h5")
-        df = pd.read_csv(f"{dir}/{sample_id}/cells.csv.gz")
+        adata = sc.read_10x_h5(f"{dir_raw}/{sample_id}/cell_feature_matrix.h5")
+        df = pd.read_csv(f"{dir_raw}/{sample_id}/cells.csv.gz")
         df.set_index(adata.obs_names, inplace=True)
         adata.obs = df.copy()
         adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
@@ -115,7 +116,6 @@ def import_xenium(dir:          str,
         print(f"Proportion of cells concerved after filtering = {adata.shape[0] / all_cells:.2%} ({adata.shape[0]} cells)")
         
         adatas.append(adata)
-        # adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
         print(f"Sample {sample_id} done")
         print(" ")
         if MMC == True:
@@ -177,7 +177,8 @@ def mmc_merge(adata: sc.AnnData,
         print('Empty input. Please check the names of files in Correlation_Mapping folder')
     return adata
 
-def add_annotations(adata: sc.AnnData, df):
+def add_annotations(adata: sc.AnnData,
+                    df: pd.DataFrame):
     '''
     Add annotations from adata.obs to matrix of gene expression (usually called 'df').
     List of annotations can be changed in module/misc.py
@@ -193,7 +194,8 @@ def add_annotations(adata: sc.AnnData, df):
     
     return df
 
-def add_annotations_unassigned(adata, df):
+def add_annotations_unassigned(adata: sc.AnnData,
+                               df: pd.DataFrame):
     '''
     Add annotations from adata.obs to matrix of gene expression (usually called 'df').
     List of annotations can be changed in module/misc.py
@@ -254,14 +256,11 @@ def clustering_scanpy(adata: sc.AnnData,
             palette="tab20b",
             size = 1
         )
-
-    
-
     return adata
 
 def norm_to_cluster(adata: sc.AnnData,
-                    dir_notebook: str,
                     name_dir: str,
+                    # dir_notebook: str = dir_notebook,
                     pca_compo:int = 10,
                     leiden_resolution:float = 0.7
                     ):
@@ -270,6 +269,6 @@ def norm_to_cluster(adata: sc.AnnData,
     
     adata = clustering_scanpy(adata,pca_compo,leiden_resolution)
 
-    cluster_plot(adata, dir_notebook, name_dir, cluster_to_use = "leiden",cluster_to_map=['all'])
+    cluster_plot(adata, name_dir, cluster_to_use = "leiden",cluster_to_map=['all'])
 
     return adata

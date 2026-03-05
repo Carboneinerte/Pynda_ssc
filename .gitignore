@@ -16,4 +16,4 @@ plot/
 .ipynb_checkpoints
 .idea
 test_mistic.ipynb
-
+module/config_local.py

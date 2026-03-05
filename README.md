@@ -8,13 +8,18 @@ conda activate "env_name"
 
 pip install -r requirements.txt
 ```
+- Copy module/config.py and rename it as module/config_local.py
+    - Define the folder containing raw files (dir_raw)
+    - Define the folder containing processed files (dir_notebook)
+    
 - Define the name of the experiment ("name_dir")
 - Define the name of each samples
-    - Rename folders in "data" accordingly
+    - Rename folders in "name_dir" accordingly
     - Add the names as a list in the function "sample_name_import" in module/misc
 ```{python}
 "name_dir" : ["sample1", "sample2", etc.]
 ```
+
 - Draw region of interest in Xenium explorer and export the list of cells
     - save as : "{sample}_Whole-section_cells_stats.csv"
 !["Xenium explorer export cell list"](module\image_readme\XE_cell_list.png)
@@ -49,9 +54,11 @@ pip install -r requirements.txt
 In module/misc, you can define your own list of genes to use in different functions (heatmap, violin plot, etc.)
 
 
+<!--
 ## reload module
 
 ```{python}
 import importlib
 importlib.reload(xp)
 ```
+-->

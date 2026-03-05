@@ -15,10 +15,11 @@ import pytz
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import scanpy as sc
+from module.config_local import dir_notebook
 
 def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
                          name_dir : str,
-                         dir_notebook : str,
+                         dir_notebook : str = dir_notebook,
                          cluster_to_use : str = 'cell_type_newnum_final',
                          individual_plot : bool = True,
                          save_plot : bool = False,
@@ -108,7 +109,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
 
 def cluster_plot(adata_to_plot,
                  name_dir,
-                 dir_notebook,
+                 dir_notebook: str = dir_notebook,
                  cluster_to_use : str = 'cell_type_newnum_final',
                  cluster_to_map : list = ['all'],
                  cmap_ : str = 'tab20b',
@@ -219,7 +220,7 @@ def cluster_plot(adata_to_plot,
 
 def polygonplot_dataprep(adata_main: sc.AnnData,
                          sample_to_plot : str,
-                         dir_notebook : str,
+                         dir_notebook : str = dir_notebook,
                          cluster_to_use : str = 'cell_type_newnum_final',
                          cmap_ : str = 'tab20b'
                          ):
@@ -291,12 +292,10 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
 
     return df, cells_geo, cluster_to_use
 
-
-
 def polygonplot_plot(df: pd.DataFrame,
                      cells_geo:gpd.GeoDataFrame,
-                     dir_notebook: str,
                      name_dir: str,            
+                     dir_notebook: str = dir_notebook,
                      cluster_to_use : str = 'cell_type_newnum_final',
                      gene_ : str = None,
                      region_ : str = None,
@@ -435,18 +434,16 @@ def polygonplot_plot(df: pd.DataFrame,
             os.mkdirs()
     plt.show()
 
-
-
 def polygonplot_plot_gradient(
         df, cells_geo,
-        dir_notebook: str,
         name_dir: str,
-        gene_ = None,
-        region_ = None,
-        region_only = None,
-        coord_ = None,
-        cmap_ = 'inferno',
-        save_plot = False
+        dir_notebook: str = dir_notebook,
+        gene_: str = None,
+        region_: str = None,
+        region_only: str = None,
+        coord_: list = None,
+        cmap_:str = 'inferno',
+        save_plot: bool = False
         ):
     
     if gene_ != None:

@@ -7,12 +7,14 @@ import pandas as pd
 import numpy as np
 from module.misc import cell_class
 from IPython.display import clear_output
-
+import progressbar
+from module.misc import genes_list
 
 
 ### Automatic initial annotation
 def automatic_initial_annotation(adata_spatial:sc.AnnData,
-                                 cluster_col: str):
+                                 cluster_col: str
+                                 ):
     cont_tab = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:subclass_name'], normalize="index")
     cont_tab_class = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:class_name'], normalize="index")
     max_col_dict = cont_tab.T.idxmax(axis=0).to_dict()
@@ -161,7 +163,6 @@ def cluster_table(adata_to_use: sc.AnnData,
 ######
 
 def cell_class_annotation(adata: sc.AnnData):
-    from module.misc import cell_class
     adata.obs['cell_class'] = 'Neuronal'
 
     dict_type = dict(zip(adata.obs['cell_type_final'],adata.obs['cell_class']))
@@ -172,8 +173,7 @@ def cell_class_annotation(adata: sc.AnnData):
     return adata
 
 #####
-import progressbar
-from module.misc import genes_list
+
 
 def circascore_annot(adata:sc.AnnData,
                      df: pd.DataFrame):
