@@ -2,7 +2,7 @@
 import os
 from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
-
+import progressbar
 import geopandas as gpd
 from IPython.display import display
 import matplotlib as mpl
@@ -11,10 +11,23 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from IPython.display import clear_output
 import pytz
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import scanpy as sc
+from pydeseq2.dds import DeseqDataSet
+from pydeseq2.ds import DeseqStats
+import random
+import pandas as pd
+import scanpy as sc
+import numpy as np
+import warnings
+from anndata import ImplicitModificationWarning
+
+warnings.simplefilter('ignore', ImplicitModificationWarning)
+
+
 from module.config_local import dir_notebook
 
 def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
@@ -535,3 +548,263 @@ def polygonplot_plot_gradient(
         except:
             os.mkdirs()
     plt.show()
+
+def DEG_one_condition(adata: sc.AnnData,
+                      name_dir: str,
+                      cluster_to_use: str,
+                      group_col: str,
+                      grp_ctrl: str,
+                      filters_bool: bool,
+                      filters_dict: dict,
+                      dir_notebook: str = dir_notebook,):
+
+    dfs = []
+    dfs_filter = []
+    all_groups = np.array(adata.obs[cluster_to_use].unique())
+    all_groups_type_sheet = all_groups
+
+    
+    bar = progressbar.ProgressBar(maxval=len(all_groups)+1, \
+        widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+    bar.start()
+
+    for idx, cell_type_to_extract in enumerate(all_groups):
+        adata_microglia = adata[adata.obs[cluster_to_use] == cell_type_to_extract]
+        sc.pp.calculate_qc_metrics(adata_microglia, percent_top=[20, 50], inplace=True)
+        print(f"Start analysis of {cell_type_to_extract}")
+        ### Extract gene expression per cluster + log fold change + p-value
+        
+        clust_uniq = adata.obs[group_col].unique()
+        dat = pd.DataFrame()
+
+        if (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[0]]) < 5) or (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[1]]) < 5):
+            all_groups_type_sheet = np.delete(all_groups_type_sheet, np.where(all_groups_type_sheet == cell_type_to_extract))
+            idx +=1
+            continue
+
+        adata_microglia.obs[group_col] = adata_microglia.obs[group_col].astype(str)
+        #sc.tl.dendrogram(adata, groupby = 'L04_newnum_subclassname')
+        sc.tl.rank_genes_groups(adata_microglia, groupby=group_col, method="wilcoxon", tie_correct = True, pts = True,
+                                #  layer = 'log1p_norm'
+                                )
+                
+        for i in adata.obs[group_col].unique():
+            dat1 = sc.get.rank_genes_groups_df(adata_microglia, group=i)
+            dat1['group'] = i
+            dat = pd.concat([dat, dat1])
+            dat["mean_count"] = dat["names"].map(dict(zip(adata_microglia.var.index, adata_microglia.var.mean_counts)))
+
+        if filters_bool:
+            dat_filter = dat[ ### Choose filters here
+            # (dat['pct_nz_group'] > filters_dic['percentage_pop']) & #Percentage of cell expressing the gene
+            (dat['pvals_adj']<= filters_dict['pval_adj']) & # adjusted p-value
+            (abs(dat['logfoldchanges']) > filters_dict['logfoldchanges']) & # logfoldchange
+            (dat['mean_count'] >= filters_dict['mean_count']) &
+            (dat['group'] != grp_ctrl)
+            ]
+            dfs_filter.append(dat_filter)
+
+        idx +=1
+        clear_output()
+        bar.update(idx)
+
+        dfs.append(dat)
+    else:
+        clear_output()
+        print('Extraction done')
+
+    bar.finish()
+
+  
+
+    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}"):
+        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}")
+
+    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_no-filter.xlsx', engine='xlsxwriter')
+    for j in range(0,len(dfs)):
+        # print(j, " : ", all_cell_type_sheet[j])
+        dfs[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
+    writer.close()
+
+    if filters_bool:
+        writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_filter.xlsx', engine='xlsxwriter')
+        for j in range(0,len(dfs_filter)):
+            dfs_filter[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
+        writer.close()
+
+    return dfs
+
+def DEG_two_conditions(adata: sc.AnnData,
+                      name_dir: str,
+                      cluster_to_use_1: str,
+                      cluster_to_use_2: str,
+                      group_col: str,
+                      grp_ctrl: str,
+                      filters_bool: bool,
+                      filters_dict: dict,
+                      dir_notebook: str = dir_notebook,
+):
+    dfs = []
+    dfs_filter = []
+    all_groups_C1 = np.array(adata.obs[cluster_to_use_1].unique())
+
+    bar = progressbar.ProgressBar(maxval=len(all_groups_C1)+1, \
+    widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+    bar.start()
+
+    for idx, group_C1 in enumerate(all_groups_C1):
+        
+        clust_uniq = adata.obs[group_col].unique()
+        
+        adata3 = adata[adata.obs[cluster_to_use_1] == group_C1]
+
+        
+        if (len(adata3[adata3.obs[group_col] == clust_uniq[0]]) < 2) or (len(adata3[adata3.obs[group_col] == clust_uniq[1]]) < 2):
+            continue
+
+        dfs = []
+        dfs_filter = []
+
+        all_group_C2 = np.array(adata3.obs[cluster_to_use_2].unique())
+        all_group_C2_sheet = all_group_C2
+        
+        
+        for cell_type_to_extract in all_group_C2:
+            print(f'Starting group: {cell_type_to_extract} in {group_C1}')
+
+            adata_microglia = adata3[adata3.obs[cluster_to_use_2] == cell_type_to_extract]
+            sc.pp.calculate_qc_metrics(adata_microglia, percent_top=[20, 50], inplace=True)
+
+            ### Extract gene expression per cluster + log fold change + p-value
+            
+            dat = pd.DataFrame()
+
+            if (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[0]]) < 2) or (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[1]]) < 2):
+                all_group_C2_sheet = np.delete(all_group_C2_sheet, np.where(all_group_C2_sheet==cell_type_to_extract))
+                clear_output()
+                continue
+
+            adata_microglia.obs[group_col] = adata_microglia.obs[group_col].astype(str)
+            sc.tl.rank_genes_groups(adata_microglia, groupby=group_col, method="wilcoxon", tie_correct = True, pts = True)
+            
+            for i in adata3.obs[group_col].unique():
+                # print(f"Cluster {cell_type_to_extract}_{i}")
+                dat1 = sc.get.rank_genes_groups_df(adata_microglia, group=i)
+                dat1['group'] = i
+                dat = pd.concat([dat, dat1])
+                dat["mean_count"] = dat["names"].map(dict(zip(adata_microglia.var.index, adata_microglia.var.mean_counts)))
+
+
+            if filters_bool:
+                dat_filter = dat[ ### Choose filters here
+                    (dat['pct_nz_group'] > filters_dict['percentage_pop']) & #Percentage of cell expressing the gene
+                    (dat['pvals_adj']<= filters_dict['pval_adj']) & # adjusted p-value
+                    (abs(dat['logfoldchanges']) > filters_dict['logfoldchanges']) & # logfoldchange
+                    (dat['mean_count'] >= filters_dict['mean_count']) & 
+                    (dat['group'] != grp_ctrl)
+                ]
+                dfs_filter.append(dat_filter)
+
+            dfs.append(dat)
+            clear_output()
+            
+        if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}"):
+            os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}")
+
+        writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG.xlsx', engine='xlsxwriter')
+        for j in range(0,len(dfs)):
+            dfs[j].to_excel(writer, sheet_name=all_group_C2_sheet[j], index=False)
+        writer.close()
+
+        if filters_bool:
+            writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG_filter.xlsx', engine='xlsxwriter')
+            for j in range(0,len(dfs_filter)):
+                dfs_filter[j].to_excel(writer, sheet_name=all_group_C2_sheet[j], index=False)
+            writer.close()
+
+        clear_output()
+
+        bar.update(idx)
+        
+    else:
+        clear_output()
+        print('Extraction done')
+
+def deseq2_one_condition(adata:sc.AnnData,
+                         name_dir:str,
+                         cluster_to_use: str,
+                         group_col: str,
+                         filters_bool: bool,
+                         filters_dict: dict,
+                         pseudoreplicates: int = 3,
+                         dir_notebook: str = dir_notebook,
+                         ):
+
+    list_celltypes = adata.obs[cluster_to_use].unique()
+    ddf = []
+    ddf_filter = []
+
+    groups = adata.obs[group_col].unique()
+
+    for idx, cell in enumerate(list_celltypes):  ### With replicates 
+        print(cell, idx+1, "/", len(list_celltypes))
+        adata_sub = adata[adata.obs[cluster_to_use]==cell]
+
+        pbs = [] 
+        for sample in adata_sub.obs['sample'].unique():
+            print(sample)
+            samp_adata_sub = adata_sub[adata_sub.obs['sample']==sample]
+            
+            samp_adata_sub.X = samp_adata_sub.layers['counts']
+
+            random.seed(20150201)
+            indices = list(samp_adata_sub.obs_names)
+            random.shuffle(indices)
+            indices = np.array_split(np.array(indices), pseudoreplicates)
+
+            for i, pseudo_rep in enumerate(indices):
+
+                rep_adata = sc.AnnData(X = samp_adata_sub[indices[i]].X.sum(axis=0),
+                                    var = samp_adata_sub[indices[i]].var[[]])
+                
+                rep_adata.obs_names = [sample + '_' + str(i)]
+                rep_adata.obs[group_col] = samp_adata_sub.obs[group_col].iloc[0]
+                rep_adata.obs['replicate'] = i
+
+                pbs.append(rep_adata)
+
+        pb = sc.concat(pbs)
+        counts = pd.DataFrame(pb.X, columns = pb.var_names)
+        dds = DeseqDataSet(counts = counts,
+                    metadata = pb.obs,
+                    design_factors = [group_col],
+                    quiet = True)
+        sc.pp.filter_genes(dds, min_cells = 1)
+        dds.deseq2()
+        stat_res = DeseqStats(dds,
+                              n_cpus = 32,
+                              contrast = (group_col,groups[1],groups[0]))
+
+        stat_res.summary() 
+        de = stat_res.results_df
+        de_filter = de[(abs(de['log2FoldChange'])>filters_dict['logfoldchanges']) &
+                       (de['padj']<filters_dict['padj'])
+                      ]
+
+        ddf.append(de)
+        ddf_filter.append(de_filter)
+
+    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
+        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")
+
+    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter')
+    for j in range(len(list_celltypes)):
+        ddf[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
+    writer.close()
+
+    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
+    for j in range(len(list_celltypes)):
+        ddf_filter[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
+    writer.close()
+
+    return ddf, ddf_filter

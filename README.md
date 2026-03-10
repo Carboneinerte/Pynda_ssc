@@ -39,6 +39,7 @@ pip install -r requirements.txt
 &nbsp;&nbsp;&nbsp;|__coordinates\
 &nbsp;&nbsp;&nbsp;|__csv &nbsp;&nbsp;(Will also contain parquet files)\
 &nbsp;&nbsp;&nbsp;|__h5ad\
+&nbsp;&nbsp;&nbsp;|__module\ (contains the .py files with the functions used in notebooks)
 &nbsp;&nbsp;&nbsp;|__plot
 
 ## List of minimum files to have in data directory (for each sample)
