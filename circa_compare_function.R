@@ -7,18 +7,17 @@ library(logr)
 #cell type to analyze
 path_to_R = '/media/volume/volume_spatial/hugo/R/'
 
-list_celltype = c("LHA_Glut","Pericyte","STR_D1_Gaba","SCH_Gaba","L5_NP_CTX_Glut","L4_5_IT_CTX_Glut","OPC","SMC","STR_PAL_Gaba",
-"CLA_EPd_CTX_Glut","STR_D2_Gaba","Endothelial","MEA_Glut","AHN_Glut","OB_STR_CTX_IMN","Pvalb_Gaba","Lamp5_Gaba","Sncg_Gaba",
-"PAL_STR_Gaba_Chol","Choroid","L5_ET_CTX_Glut","CEA_Gaba","STR_Gaba","COAa_PAA_MEA_Glut","Ependymal","Microglia","VLMC","Vip_Gaba",
-"Oligodendrocyte","L6b_CTX_Glut","L6_CT_CTX_Glut","Sst_Gaba","L6_IT_CTX_Glut","Astro_TE","ABC","PVH_Glut","L2_3_IT_PIR_ENTl_Glut")
+list_celltype = c('Pericyte','SCH_Gaba','CLA_EPd_CTX_Glut','PVH_SO_Glut','PVT_Glut','Endothelial','BST_MPN_Gaba','Pvalb_Gaba','LHA_Glut','L5_ET_CTX_Glut','Astrocyte','Oligodendrocyte','SI_Gaba','STR_D1_Gaba','Sst_Gaba','Ependymal','STR_D2_Gaba',
+'RT_ZI_Gaba','L4_5_IT_CTX_Glut','L5_NP_CTX_Glut','Microglia','STR_PAL_Gaba','OPC','Lamp5_Gaba','STR_Gaba','Vip_Gaba','L6_CT_CTX_Glut','COAa_PAA_MEA_Glut','Choroid','MEA_Glut','L2_3_IT_PIR_ENTl_Glut','VLMC','L2_3_IT_CTX_Glut','AHN_Glut','ABC',
+'L6b_CTX_Glut','PAL_STR_Gaba_Chol','OB_STR_CTX_Inh_IMN','L6_IT_CTX_Glut')
 
 
 circacompare_loop = function(path_to_R = '/media/volume/volume_spatial/hugo/R/',
                             cell_type = cell_type){
 
 #define paths for the excel files from metacycle. in raw folder. rename to the desired cell type
-path_circa4 <- paste0(path_to_R,"Results/2025-08-08_circa4_celltype/Raw/",cell_type,"_cyc_analysis.xlsx")
-path_sd1 <- paste0(path_to_R,"Results/2025-08-09_SD1_celltype/Raw/",cell_type,"_cyc_analysis.xlsx")
+path_circa4 <- paste0(path_to_R,"Results/2026-01-26_circa4_celltype/Raw/",cell_type,"_cyc_analysis.xlsx")
+path_sd1 <- paste0(path_to_R,"Results/2026-01-26_SD1_celltype/Raw/",cell_type,"_cyc_analysis.xlsx")
 
 #find shared significantly cycling genes from circa4 and SD1
 #filter by pval< 0.05

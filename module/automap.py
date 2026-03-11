@@ -26,7 +26,8 @@ import numpy as np
 
 ###
 
-def knn_mst_clustering(data, cell_type, k=10, std_threshold=2, min_component_size=100):
+def knn_mst_clustering(data:pd.DataFrame,
+                       cell_type, k=10, std_threshold=2, min_component_size=100):
     # Filter the data for the selected cell type
     cell_data = data[data['knn_celltype'] == cell_type]
     coordinates = cell_data[['x_centroid', 'y_centroid']].values
@@ -73,8 +74,10 @@ def knn_mst_clustering(data, cell_type, k=10, std_threshold=2, min_component_siz
 
 ###
 
-
-def assign_chunk_labels(df, chunk_size, threshold=0.5):
+def assign_chunk_labels(df: pd.DataFrame,
+                        chunk_size:int,
+                        threshold: float = 0.5
+                        ):
     # Multiply centroid coordinates by 10 to convert to pixel coordinates
     
     # Determine the grid size based on the pixel coordinates
@@ -119,7 +122,6 @@ def assign_chunk_labels(df, chunk_size, threshold=0.5):
     
     return grid, x_bins, y_bins
 
-
 def fill_empty_chunks(grid, x_bins, y_bins, n=4):
     # Create a copy of the grid to store the updated values
     filled_grid = grid.copy()
@@ -150,7 +152,6 @@ def fill_empty_chunks(grid, x_bins, y_bins, n=4):
     
     return filled_grid, x_bins, y_bins
 
-
 def fill_any_chunks(grid, x_bins, y_bins, n=4):
     # Create a copy of the grid to store the updated values
     filled_grid = grid.copy()
@@ -180,8 +181,6 @@ def fill_any_chunks(grid, x_bins, y_bins, n=4):
     
     return filled_grid, x_bins, y_bins
 
-
-
 def smooth_boundary(contour, x_bins, y_bins):
     # Convert contour points to the original coordinate space
     x = contour[:, 1]
@@ -205,7 +204,8 @@ def smooth_boundary(contour, x_bins, y_bins):
     
     return x_smooth, y_smooth
 
-def plot_cells_and_chunks(df, grid, x_bins, y_bins):
+def plot_cells_and_chunks(df: pd.DataFrame,
+                          grid, x_bins, y_bins):
     # Create a scatter plot for all cells
     plt.figure(figsize=(16, 10))
     scatter = plt.scatter(df['x_pixel'], df['y_pixel'], c=df['cell_type_newnum_final'], cmap='tab20', s=0.5, alpha=0.6)
@@ -256,8 +256,8 @@ def plot_cells_and_chunks(df, grid, x_bins, y_bins):
     plt.title('Xenium Spatial Transcriptomics - Cells and Inferred Regions')
     plt.show()
 
-
-def grid_to_geojson_with_scaling(grid, x_bins, y_bins, mapping_dict, scale_factor=10):
+def grid_to_geojson_with_scaling(grid, x_bins, y_bins, mapping_dict,
+                                 scale_factor: int =10):
     # Dictionary to store polygons grouped by cell_type_newnum
     polygons_by_type = {}
     
@@ -308,4 +308,3 @@ def grid_to_geojson_with_scaling(grid, x_bins, y_bins, mapping_dict, scale_facto
     }
     
     return geojson
-
