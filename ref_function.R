@@ -6,7 +6,7 @@ library(readr)
 library(knitr)
 
 PreProcessingData = function(run_name, circascore='all'){
-  log_print("Start importing data")
+  log_print("Start importing data : ")
   path_to_data = paste0('/media/volume/volume_spatial/hugo/R/data/',run_name,'_norm_combined.parquet')
   data=read_parquet(path_to_data)
   
@@ -22,7 +22,7 @@ CircaFilter = function(data, run_name,circascore){
     data = dplyr::filter(data, data$circascore == 0)
   } else if (circascore == 'non-zero'){
     data = dplyr::filter(data, data$circascore != 0)
-  } else if (circascore == 'all') {log_print('no circascore')}
+  } else if (circascore == 'all') {lrgkdf=1}
   log_print('Data Preprocessing done')
   
   return (data)
@@ -34,19 +34,23 @@ CircaFilter = function(data, run_name,circascore){
 ### Valid cells
 GetValidCells <- function(run_name){
   if (run_name == 'circa4'){
-    valid_cells <- c('ABC','AHN Glut','Astro TE','CEA Gaba','CLA EPd CTX Glut','COAa PAA MEA Glut','Choroid',
-'Endothelial','Ependymal','L2 3 IT PIR ENTl Glut','L4 5 IT CTX Glut','L5 ET CTX Glut',
-'L5 NP CTX Glut','L6 CT CTX Glut','L6 IT CTX Glut','L6b CTX Glut','LHA Glut','Lamp5 Gaba',
-'MEA Glut','Microglia','OB STR CTX IMN','OPC','Oligodendrocyte','PAL STR Gaba Chol','PVH Glut','PVT Glut','Pericyte','Pvalb Gaba','SCH Gaba','SMC','STR D1 Gaba','STR D2 Gaba','STR Gaba','STR PAL Gaba','Sncg Gaba','Sst Gaba','VLMC','Vip Gaba'
+    valid_cells <- c(
+      "ABC","AHN_Glut", "Astrocyte",  "BST_MPN_Gaba","Choroid","CLA_EPd_CTX_Glut","COAa_PAA_MEA_Glut",
+      "Endothelial","Ependymal","L2_3_IT_CTX_Glut","L2_3_IT_PIR_ENTl_Glut","L4_5_IT_CTX_Glut","L5_ET_CTX_Glut",
+      "L5_NP_CTX_Glut","L6_CT_CTX_Glut","L6_IT_CTX_Glut","L6b_CTX_Glut","Lamp5_Gaba","LHA_Glut","MEA_Glut",
+      "Microglia","OB_STR_CTX_Inh_IMN","Oligodendrocyte","OPC","PAL_STR_Gaba_Chol","Pericyte","Pvalb_Gaba",
+      "PVH_SO_Glut","PVR_Gaba","PVT_Glut","RE_Glut",'RT_ZI_Gaba',"SCH_Gaba","SI_Gaba",
+      "Sst_Gaba","STR_D1_Gaba","STR_D2_Gaba","STR_Gaba","STR_PAL_Gaba","TH_Glut","Vip_Gaba","VLMC"
 )}
   else if (run_name == 'SD1'){
-    valid_cells <- c("ABC","AHN Glut","Astro TE","CEA Gaba","CLA EPd CTX Glut","COAa PAA MEA Glut",
-"Choroid","Endothelial","Ependymal","L2 3 IT PIR ENTl Glut","L4 5 IT CTX Glut",
-"L5 ET CTX Glut","L5 NP CTX Glut","L6 CT CTX Glut","L6 IT CTX Glut","L6b CTX Glut",
-"LHA Glut","Lamp5 Gaba","MEA Glut","MPO Glut","Microglia","OB STR CTX IMN","OPC",
-"Oligodendrocyte","PAL STR Gaba Chol","PVH Glut","Pericyte","Pvalb Gaba","SCH Gaba",
-"SMC","SPA Glut","STR D1 Gaba","STR D2 Gaba","STR Gaba","STR PAL Gaba","Sncg Gaba",
-"Sst Gaba","VLMC","Vip Gaba")}
+    valid_cells <- c(
+      "ABC","AHN_Glut","Astrocyte","BST_MPN_Gaba","Choroid","CLA_EPd_CTX_Glut","COAa_PAA_MEA_Glut","Endothelial",
+      "Ependymal","L2_3_IT_CTX_Glut","L2_3_IT_PIR_ENTl_Glut","L4_5_IT_CTX_Glut","L5_ET_CTX_Glut","L5_NP_CTX_Glut",
+      "L6_CT_CTX_Glut","L6_IT_CTX_Glut","L6b_CTX_Glut","Lamp5_Gaba","LHA_Glut","MEA_Glut","Microglia",
+      "OB_STR_CTX_Inh_IMN","Oligodendrocyte","OPC","PAL_STR_Gaba_Chol","Pericyte","Pvalb_Gaba","PVH_SO_Glut",
+      "PVT_Glut","RT_ZI_Gaba","SCH_Gaba","SI_Gaba","Sst_Gaba","STR_D1_Gaba","STR_D2_Gaba","STR_Gaba","STR_PAL_Gaba",
+      "Vip_Gaba","VLMC"      
+)}
   log_print('Valid celltypes names: Loaded')
   return (valid_cells)
 }
@@ -56,12 +60,18 @@ GetValidCells <- function(run_name){
 ### Valid Regions
 GetValidRegions = function(run_name){
   if (run_name == 'circa4'){
-    valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "PVT", "SCH", "STR", "WM")
+    valid_regions = c("AMY", "BST", "CTX", "LHA", "SCH", "SI", "STR")
   }
   else if(run_name == 'SD1'){
-    valid_regions = c("AHN", "AMY", "CTX", "LHA", "PVH", "SCH", "STR")
+    valid_regions = c("AMY", "BST", "CTX", "LHA", "SCH", "SI", "STR")
   }
-  log_print('Valid region names: Loaded')
+  else if(run_name == 'Unassigned_SD1'){
+    valid_regions = c("CTX", "THY", "STR", "WM")
+  }
+  else if(run_name == 'Unassigned_circa4'){
+    valid_regions = c("CTX", "THY", "STR", "WM")
+  }
+  #log_print('Valid region names: Loaded')
   return (valid_regions)
 }
 
@@ -72,7 +82,7 @@ GetValidCellClasses <- function(run_name){
   } else if (run_name == 'SD1'){
     valid_classes <- c("Glial", "Neuronal", "Vascular","Ependymal")
   }
-  log_print('Valid cell class names: Loaded')
+  #log_print('Valid cell class names: Loaded')
   return (valid_classes)
 }
 
@@ -83,7 +93,7 @@ GetValidNeurotransmitters <- function(run_name){
   } else if (run_name == 'SD1'){
     valid_neurotransmitters <- c("Glutamate", "Gaba", "Acetylcholine")
   }
-  log_print('Valid neurotransmitter names: Loaded')
+  #log_print('Valid neurotransmitter names: Loaded')
   return (valid_neurotransmitters)
 }
 
@@ -279,7 +289,7 @@ MetaCycleAnalysis <- function(data, condition, run_name, path_to_save, date,
     
     all_cycling_genes <- do.call(rbind, lapply(names(siglist), function(name) data.frame(gene=siglist[[name]]$CycID, item_name=name)))
     if (!is.null(all_cycling_genes) && nrow(all_cycling_genes) > 0) {
-      gene_item_counts <- all_cycling_genes %>% group_by(gene) %>% summarize(group_count = n(), groups = paste(item_name, collapse = " | ")) %>% arrange(desc(group_count))
+    gene_item_counts <- all_cycling_genes %>% group_by(gene) %>% summarize(group_count = n(), groups = paste(item_name, collapse = " | ")) %>% arrange(desc(group_count))
       names(gene_item_counts) <- c("gene", paste0(analysis_by, "_count"), paste0(analysis_by, "s"))
       write.csv(gene_item_counts, paste0(path_to_save, "/Summary/", date, "_", run_name, "_group_per_cycling_gene.csv"), row.names = FALSE)
     }

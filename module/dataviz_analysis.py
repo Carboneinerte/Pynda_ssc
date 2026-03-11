@@ -1,5 +1,8 @@
 ### import necessary libraries
+import os
 from datetime import datetime
+today = datetime.today().strftime('%Y-%m-%d')
+import progressbar
 import geopandas as gpd
 from IPython.display import display
 import matplotlib as mpl
@@ -8,15 +11,36 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 import seaborn as sns
+from IPython.display import clear_output
 import pytz
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import scanpy as sc
+from pydeseq2.dds import DeseqDataSet
+from pydeseq2.ds import DeseqStats
+import random
+import pandas as pd
+import scanpy as sc
+import numpy as np
+import warnings
+from anndata import ImplicitModificationWarning
+
+warnings.simplefilter('ignore', ImplicitModificationWarning)
 
 
-def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final',
-                          individual_plot = True, save_plot = False, cmap_ = 'hls',
-                            ):
+from module.config_local import dir_notebook
 
+def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
+                         name_dir : str,
+                         dir_notebook : str = dir_notebook,
+                         cluster_to_use : str = 'cell_type_newnum_final',
+                         individual_plot : bool = True,
+                         save_plot : bool = False,
+                         cmap_ : str = 'hls',
+                        ):
+    '''
+    Plot UMAP with all samples combined or with individual samples.
+    '''
 
     adata_to_plot.obsm['umap'] = adata_to_plot.obsm['reduced_pc_20_umap']
     adata_to_plot.obs['umap-1'] = adata_to_plot.obsm['umap'][:, 0]
@@ -54,8 +78,13 @@ def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = '
         plt.show()
         
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
-        
+            try:
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+
+            except:
+                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+
     ####
     else:
         cell_type_unique = adata_to_plot.obs[cluster_to_use].unique()
@@ -83,13 +112,44 @@ def umap_plot_indi_multi(adata_to_plot,name_dir,dir_notebook, cluster_to_use = '
             ax.text(centroid['umap-3'], centroid['umap-4'], str(cluster_id), color='black', fontsize=12, ha = 'center')
 
         plt.legend(markerscale=20, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-        
+        plt.show()
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
-    
+            try:
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
+            except:
+                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
 
-def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_type_newnum_final', cluster_to_map = 'all',
-                 cmap_ = 'tab20b', save_plot = False):
+def cluster_plot(adata_to_plot,
+                 name_dir,
+                 dir_notebook: str = dir_notebook,
+                 cluster_to_use : str = 'cell_type_newnum_final',
+                 cluster_to_map : list = ['all'],
+                 cmap_ : str = 'tab20b',
+                 save_plot : bool = False
+                 ):
+    
+    '''
+    Spatial plot of individual cells for each sample separately.
+
+    Cluster usable:
+    'cell_type_newnum_auto_sub','cell_type_newnum_auto','cell_type_newnum_final',
+    'cell_class_newnum','region_automap_num',"leiden","kmeans","circascore"
+
+    Docstring for cluster_plot
+    
+    :param adata_to_plot: Description
+    :param name_dir: Description
+    :param dir_notebook: Description
+    :param cluster_to_use: Description
+    :type cluster_to_use: str
+    :param cluster_to_map: Description
+    :type cluster_to_map: list
+    :param cmap_: Description
+    :type cmap_: str
+    :param save_plot: Description
+    :type save_plot: bool
+    '''
 
     label_to_use = cluster_to_use
     test_dict = {
@@ -98,6 +158,7 @@ def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_ty
     'cell_type_newnum_final':'cell_type_final',
     'cell_class_newnum': 'cell_class',
     'region_automap_num':'region_automap_name',
+    'region_manual_map_num' : 'region_manual_map',
     "leiden":"leiden",
     "kmeans":"kmeans",
     "circascore":"circascore",
@@ -117,14 +178,23 @@ def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_ty
         num_clusters = len(adata_to_plot.obs[cluster_to_use].astype(int).unique())
         palette = sns.color_palette(cmap_, n_colors=num_clusters +1)
         adata_to_plot.obs['leiden_colors'] = adata_to_plot.obs[cluster_to_use].astype(int).apply(lambda x: palette[x])
+        samples_ids = adata_to_plot.obs['sample'].unique().sort_values()
 
         # Map all cells
         b = int(adata_to_plot.obs['sample'].nunique() / 3)
-        fig, axs = plt.subplots(b,3,
-                                figsize=(15,25))
+        if b == 0:
+            b=1
+        if len(samples_ids) <= 3:
+            a= len(samples_ids)
+            b=0
+        else:
+            a=3
+            
+        _, axs = plt.subplots(b,a,
+                                figsize=(15,6))
         axs = axs.flatten()# Mapping of clusters
 
-        if cluster_to_map != 'all':
+        if cluster_to_map != ['all']:
             cluster_to_map2 = cluster_to_map
             color_samples = ['red','green','blue',"black",'magenta','pink',"darkgreen",'coral','orchid','pink']
             while len(color_samples) < len(cluster_to_map):
@@ -135,31 +205,56 @@ def cluster_plot(adata_to_plot, name_dir,dir_notebook, cluster_to_use = 'cell_ty
                 dict_temp = {cluster_to_map[l]:color_samples[l]}
                 clusters_plot.update(dict_temp)    
 
-        samples_ids = adata_to_plot.obs['sample'].unique()
+        
         for idx, sample in enumerate(samples_ids):
             adata_sel = adata_to_plot[(adata_to_plot.obs['sample'] == sample)]
             cluster_to_map2 = adata_sel.obs[cluster_to_use].unique()
             for cluster_id in cluster_to_map2:
                 cluster_data = adata_sel.obs[adata_sel.obs[cluster_to_use] == cluster_id]
-                if cluster_to_map != 'all':
+                if cluster_to_map != ['all']:
                     colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
                 else:
                     colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
-                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.005, label=cluster_data[label_to_use].unique()[0])
+                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.01, marker = 'o', label=cluster_data[label_to_use].unique()[0])
                 axs[idx].set_title(f"Sample {sample}")
                 axs[idx].xaxis.set_tick_params(labelbottom=False)
                 axs[idx].yaxis.set_tick_params(labelleft=False)
                 axs[idx].set_aspect('equal', adjustable='box')
-        plt.legend(markerscale=50, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
-        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.3, hspace=0.3)
-
+        # plt.legend(markerscale=5, scatterpoints=10,fontsize='small', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, mode="expand", ncol =3)
+        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.3)
+        plt.show()
+        
         if save_plot == True:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+            try:
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+            except:
+                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+
+def polygonplot_dataprep(adata_main: sc.AnnData,
+                         sample_to_plot : str,
+                         dir_notebook : str = dir_notebook,
+                         cluster_to_use : str = 'cell_type_newnum_final',
+                         cmap_ : str = 'tab20b'
+                         ):
+    
+    '''
+    Docstring for polygonplot_dataprep
+    
+    Prepare data for polygon plot. Only ONE SAMPLE at the time.
 
 
-def polygonplot_dataprep(adata_main, sample_to_plot, dir_notebook, cluster_to_use = 'cell_type_newnum_final',
-                          cmap_ = 'tab20b'):
-
+    :param adata_main: main AnnData object
+    :param sample_to_plot: Full name from 'sample' columns
+    :type sample_to_plot: str
+    :param dir_notebook: Description
+    :type dir_notebook: str
+    :param cluster_to_use: Description
+    :type cluster_to_use: str
+    :param cmap_: Will be used for the polygons colors
+    :type cmap_: str
+    '''
+    
     ### Generate a color palette for the clusters - to make color stay consistent across samples
     num_clusters = len(adata_main.obs[cluster_to_use].astype(int).unique())
     palette = sns.color_palette(cmap_, n_colors=num_clusters)
@@ -210,10 +305,42 @@ def polygonplot_dataprep(adata_main, sample_to_plot, dir_notebook, cluster_to_us
 
     return df, cells_geo, cluster_to_use
 
+def polygonplot_plot(df: pd.DataFrame,
+                     cells_geo:gpd.GeoDataFrame,
+                     name_dir: str,            
+                     dir_notebook: str = dir_notebook,
+                     cluster_to_use : str = 'cell_type_newnum_final',
+                     gene_ : str = None,
+                     region_ : str = None,
+                     region_only : str = None,
+                     coord_ : list = None,
+                     save_plot : bool = False,
+                     legend : bool = False
+                     ):
+    
+    '''
+    Docstring for polygonplot_plot
+    
+    :param df: Description
+    :type df: Dataframe
+    :param cells_geo: Description
+    :type cells_geo: Dataframe
+    :param cluster_to_use: Description
+    :type cluster_to_use: str
+    :param gene_: Description
+    :type gene_: str
+    :param region_: Description
+    :type region_: str
+    :param region_only: Description
+    :type region_only: str
+    :param coord_: Description
+    :type coord_: list
+    :param save_plot: Description
+    :type save_plot: bool
+    :param legend: Description
+    :type legend: bool
+    '''
 
-
-def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None, region_only = None,
-                      coord_ = None, save_plot = False, legend = False):
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
@@ -314,16 +441,24 @@ def polygonplot_plot(df, cells_geo, cluster_to_use, gene_ = None, region_ = None
             bbox_to_anchor=(1, 0.5), title='Cell Type')
 
     if save_plot:
-        now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
-        tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
-    
+        try:
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
+        except:
+            os.mkdirs()
     plt.show()
 
-
-
-def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, region_only = None,
-                               coord_ = None, cmap_ = 'inferno', save_plot = False):
+def polygonplot_plot_gradient(
+        df, cells_geo,
+        name_dir: str,
+        dir_notebook: str = dir_notebook,
+        gene_: str = None,
+        region_: str = None,
+        region_only: str = None,
+        coord_: list = None,
+        cmap_:str = 'inferno',
+        save_plot: bool = False
+        ):
+    
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
@@ -401,15 +536,275 @@ def polygonplot_plot_gradient(df, cells_geo, gene_ = None, region_ = None, regio
 
     # cbar.set_label(gene_, size=20)
 
-    fig.colorbar()
+    # fig.colorbar()
 
     ##### Add the custom legend
     ax.legend(handles=legend_patches,     loc='center left', 
         bbox_to_anchor=(1, 0.5), title='Cell Type')
 
-    if save_plot == True:
-        now_ = datetime.now(pytz.timezone('America/Los_Angeles'))
-        tod_ = f'{now_.year}_{now_.month}_{now_.day}'
-        plt.savefig(f"plot/{tod_}_plot_{region_}_{gene_}.svg", dpi=300, transparent=True)
-    
+    if save_plot:
+        try:
+            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
+        except:
+            os.mkdirs()
     plt.show()
+
+def DEG_one_condition(adata: sc.AnnData,
+                      name_dir: str,
+                      cluster_to_use: str,
+                      group_col: str,
+                      grp_ctrl: str,
+                      filters_bool: bool,
+                      filters_dict: dict,
+                      dir_notebook: str = dir_notebook,):
+
+    dfs = []
+    dfs_filter = []
+    all_groups = np.array(adata.obs[cluster_to_use].unique())
+    all_groups_type_sheet = all_groups
+
+    
+    bar = progressbar.ProgressBar(maxval=len(all_groups)+1, \
+        widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+    bar.start()
+
+    for idx, cell_type_to_extract in enumerate(all_groups):
+        adata_microglia = adata[adata.obs[cluster_to_use] == cell_type_to_extract]
+        sc.pp.calculate_qc_metrics(adata_microglia, percent_top=[20, 50], inplace=True)
+        print(f"Start analysis of {cell_type_to_extract}")
+        ### Extract gene expression per cluster + log fold change + p-value
+        
+        clust_uniq = adata.obs[group_col].unique()
+        dat = pd.DataFrame()
+
+        if (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[0]]) < 5) or (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[1]]) < 5):
+            all_groups_type_sheet = np.delete(all_groups_type_sheet, np.where(all_groups_type_sheet == cell_type_to_extract))
+            idx +=1
+            continue
+
+        adata_microglia.obs[group_col] = adata_microglia.obs[group_col].astype(str)
+        #sc.tl.dendrogram(adata, groupby = 'L04_newnum_subclassname')
+        sc.tl.rank_genes_groups(adata_microglia, groupby=group_col, method="wilcoxon", tie_correct = True, pts = True,
+                                #  layer = 'log1p_norm'
+                                )
+                
+        for i in adata.obs[group_col].unique():
+            dat1 = sc.get.rank_genes_groups_df(adata_microglia, group=i)
+            dat1['group'] = i
+            dat = pd.concat([dat, dat1])
+            dat["mean_count"] = dat["names"].map(dict(zip(adata_microglia.var.index, adata_microglia.var.mean_counts)))
+
+        if filters_bool:
+            dat_filter = dat[ ### Choose filters here
+            # (dat['pct_nz_group'] > filters_dic['percentage_pop']) & #Percentage of cell expressing the gene
+            (dat['pvals_adj']<= filters_dict['pval_adj']) & # adjusted p-value
+            (abs(dat['logfoldchanges']) > filters_dict['logfoldchanges']) & # logfoldchange
+            (dat['mean_count'] >= filters_dict['mean_count']) &
+            (dat['group'] != grp_ctrl)
+            ]
+            dfs_filter.append(dat_filter)
+
+        idx +=1
+        clear_output()
+        bar.update(idx)
+
+        dfs.append(dat)
+    else:
+        clear_output()
+        print('Extraction done')
+
+    bar.finish()
+
+  
+
+    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}"):
+        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}")
+
+    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_no-filter.xlsx', engine='xlsxwriter')
+    for j in range(0,len(dfs)):
+        # print(j, " : ", all_cell_type_sheet[j])
+        dfs[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
+    writer.close()
+
+    if filters_bool:
+        writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_filter.xlsx', engine='xlsxwriter')
+        for j in range(0,len(dfs_filter)):
+            dfs_filter[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
+        writer.close()
+
+    return dfs
+
+def DEG_two_conditions(adata: sc.AnnData,
+                      name_dir: str,
+                      cluster_to_use_1: str,
+                      cluster_to_use_2: str,
+                      group_col: str,
+                      grp_ctrl: str,
+                      filters_bool: bool,
+                      filters_dict: dict,
+                      dir_notebook: str = dir_notebook,
+):
+    dfs = []
+    dfs_filter = []
+    all_groups_C1 = np.array(adata.obs[cluster_to_use_1].unique())
+
+    bar = progressbar.ProgressBar(maxval=len(all_groups_C1)+1, \
+    widgets=[progressbar.Bar('=', '[', ']'), ' ', progressbar.Percentage()])
+    bar.start()
+
+    for idx, group_C1 in enumerate(all_groups_C1):
+        
+        clust_uniq = adata.obs[group_col].unique()
+        
+        adata3 = adata[adata.obs[cluster_to_use_1] == group_C1]
+
+        
+        if (len(adata3[adata3.obs[group_col] == clust_uniq[0]]) < 2) or (len(adata3[adata3.obs[group_col] == clust_uniq[1]]) < 2):
+            continue
+
+        dfs = []
+        dfs_filter = []
+
+        all_group_C2 = np.array(adata3.obs[cluster_to_use_2].unique())
+        all_group_C2_sheet = all_group_C2
+        
+        
+        for cell_type_to_extract in all_group_C2:
+            print(f'Starting group: {cell_type_to_extract} in {group_C1}')
+
+            adata_microglia = adata3[adata3.obs[cluster_to_use_2] == cell_type_to_extract]
+            sc.pp.calculate_qc_metrics(adata_microglia, percent_top=[20, 50], inplace=True)
+
+            ### Extract gene expression per cluster + log fold change + p-value
+            
+            dat = pd.DataFrame()
+
+            if (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[0]]) < 2) or (len(adata_microglia[adata_microglia.obs[group_col] == clust_uniq[1]]) < 2):
+                all_group_C2_sheet = np.delete(all_group_C2_sheet, np.where(all_group_C2_sheet==cell_type_to_extract))
+                clear_output()
+                continue
+
+            adata_microglia.obs[group_col] = adata_microglia.obs[group_col].astype(str)
+            sc.tl.rank_genes_groups(adata_microglia, groupby=group_col, method="wilcoxon", tie_correct = True, pts = True)
+            
+            for i in adata3.obs[group_col].unique():
+                # print(f"Cluster {cell_type_to_extract}_{i}")
+                dat1 = sc.get.rank_genes_groups_df(adata_microglia, group=i)
+                dat1['group'] = i
+                dat = pd.concat([dat, dat1])
+                dat["mean_count"] = dat["names"].map(dict(zip(adata_microglia.var.index, adata_microglia.var.mean_counts)))
+
+
+            if filters_bool:
+                dat_filter = dat[ ### Choose filters here
+                    (dat['pct_nz_group'] > filters_dict['percentage_pop']) & #Percentage of cell expressing the gene
+                    (dat['pvals_adj']<= filters_dict['pval_adj']) & # adjusted p-value
+                    (abs(dat['logfoldchanges']) > filters_dict['logfoldchanges']) & # logfoldchange
+                    (dat['mean_count'] >= filters_dict['mean_count']) & 
+                    (dat['group'] != grp_ctrl)
+                ]
+                dfs_filter.append(dat_filter)
+
+            dfs.append(dat)
+            clear_output()
+            
+        if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}"):
+            os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}")
+
+        writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG.xlsx', engine='xlsxwriter')
+        for j in range(0,len(dfs)):
+            dfs[j].to_excel(writer, sheet_name=all_group_C2_sheet[j], index=False)
+        writer.close()
+
+        if filters_bool:
+            writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG_filter.xlsx', engine='xlsxwriter')
+            for j in range(0,len(dfs_filter)):
+                dfs_filter[j].to_excel(writer, sheet_name=all_group_C2_sheet[j], index=False)
+            writer.close()
+
+        clear_output()
+
+        bar.update(idx)
+        
+    else:
+        clear_output()
+        print('Extraction done')
+
+def deseq2_one_condition(adata:sc.AnnData,
+                         name_dir:str,
+                         cluster_to_use: str,
+                         group_col: str,
+                         filters_bool: bool,
+                         filters_dict: dict,
+                         pseudoreplicates: int = 3,
+                         dir_notebook: str = dir_notebook,
+                         ):
+
+    list_celltypes = adata.obs[cluster_to_use].unique()
+    ddf = []
+    ddf_filter = []
+
+    groups = adata.obs[group_col].unique()
+
+    for idx, cell in enumerate(list_celltypes):  ### With replicates 
+        print(cell, idx+1, "/", len(list_celltypes))
+        adata_sub = adata[adata.obs[cluster_to_use]==cell]
+
+        pbs = [] 
+        for sample in adata_sub.obs['sample'].unique():
+            print(sample)
+            samp_adata_sub = adata_sub[adata_sub.obs['sample']==sample]
+            
+            samp_adata_sub.X = samp_adata_sub.layers['counts']
+
+            random.seed(20150201)
+            indices = list(samp_adata_sub.obs_names)
+            random.shuffle(indices)
+            indices = np.array_split(np.array(indices), pseudoreplicates)
+
+            for i, pseudo_rep in enumerate(indices):
+
+                rep_adata = sc.AnnData(X = samp_adata_sub[indices[i]].X.sum(axis=0),
+                                    var = samp_adata_sub[indices[i]].var[[]])
+                
+                rep_adata.obs_names = [sample + '_' + str(i)]
+                rep_adata.obs[group_col] = samp_adata_sub.obs[group_col].iloc[0]
+                rep_adata.obs['replicate'] = i
+
+                pbs.append(rep_adata)
+
+        pb = sc.concat(pbs)
+        counts = pd.DataFrame(pb.X, columns = pb.var_names)
+        dds = DeseqDataSet(counts = counts,
+                    metadata = pb.obs,
+                    design_factors = [group_col],
+                    quiet = True)
+        sc.pp.filter_genes(dds, min_cells = 1)
+        dds.deseq2()
+        stat_res = DeseqStats(dds,
+                              n_cpus = 32,
+                              contrast = (group_col,groups[1],groups[0]))
+
+        stat_res.summary() 
+        de = stat_res.results_df
+        de_filter = de[(abs(de['log2FoldChange'])>filters_dict['logfoldchanges']) &
+                       (de['padj']<filters_dict['padj'])
+                      ]
+
+        ddf.append(de)
+        ddf_filter.append(de_filter)
+
+    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
+        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")
+
+    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter')
+    for j in range(len(list_celltypes)):
+        ddf[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
+    writer.close()
+
+    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
+    for j in range(len(list_celltypes)):
+        ddf_filter[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
+    writer.close()
+
+    return ddf, ddf_filter
