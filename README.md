@@ -2,22 +2,22 @@
 - Clone or copy repository from Github (main branch)
 - Install Conda and create environment
 ```{python}
-conda create -n "env_name" python==3.10.12
+conda create -n "env_name" python==3.11
 
 conda activate "env_name"
 
 pip install -r requirements.txt
 ```
 - Copy module/config.py and rename it as module/config_local.py
-    - Define the folder containing raw files (dir_raw)
-    - Define the folder containing processed files (dir_notebook)
+    - Define the folder containing raw files (**dir_raw**)
+    - Define the folder containing processed files (**dir_notebook**)
     
-- Define the name of the experiment ("name_dir")
+- Define the name of the experiment (**name_dir**)
 - Define the name of each samples
     - Rename folders in "name_dir" accordingly
-    - Add the names as a list in the function "sample_name_import" in module/misc
+    - Add the names as a list in the function "sample_name_import" in module/misc.py
 ```{python}
-"name_dir" : ["sample1", "sample2", etc.]
+"name_dir" : ["sample1", "sample2", etc.],
 ```
 
 - Draw region of interest in Xenium explorer and export the list of cells
@@ -33,7 +33,7 @@ pip install -r requirements.txt
 ## Folder organization
 
 /root/\
-&nbsp;|__data &nbsp;&nbsp;(="dir")\
+&nbsp;|__data &nbsp;&nbsp;(="dir_raw")\
 &nbsp;|__notebook &nbsp;&nbsp;(="dir_notebook")\
 &nbsp;&nbsp;&nbsp;|__analysis\
 &nbsp;&nbsp;&nbsp;|__coordinates\
