@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ```
 
 - Draw region of interest in Xenium explorer and export the list of cells
-    - save as : "{sample}_Whole-section_cells_stats.csv"
+    - save as : "{sample}_ROI_cells_stats.csv" in {dir_notebook}/coordinates/region_of_interest/\
 !["Xenium explorer export cell list"](module\image_readme\XE_cell_list.png)
 
 ### Optional
@@ -33,16 +33,19 @@ pip install -r requirements.txt
 ## Folder organization
 
 /root/\
-&nbsp;|__data &nbsp;&nbsp;(="dir_raw")\
-&nbsp;|__notebook &nbsp;&nbsp;(="dir_notebook")\
-&nbsp;&nbsp;&nbsp;|__analysis\
-&nbsp;&nbsp;&nbsp;|__coordinates\
-&nbsp;&nbsp;&nbsp;|__csv &nbsp;&nbsp;(Will also contain parquet files)\
-&nbsp;&nbsp;&nbsp;|__h5ad\
-&nbsp;&nbsp;&nbsp;|__module\ (contains the .py files with the functions used in notebooks)
-&nbsp;&nbsp;&nbsp;|__plot
+&nbsp;|-- data &nbsp;&nbsp;(="dir_raw")\
+&nbsp;&nbsp;&nbsp;|-- "Sample1"\
+&nbsp;&nbsp;&nbsp;|-- "Sample2"\
+&nbsp;&nbsp;&nbsp;|-- "..."\
+&nbsp;|-- notebook &nbsp;&nbsp;(="dir_notebook")\
+&nbsp;&nbsp;&nbsp;|-- analysis\
+&nbsp;&nbsp;&nbsp;|-- coordinates\
+&nbsp;&nbsp;&nbsp;|-- csv &nbsp;&nbsp;(Will also contain parquet files)\
+&nbsp;&nbsp;&nbsp;|-- h5ad\
+&nbsp;&nbsp;&nbsp;|-- module (contains the .py files with the functions used in notebooks)\
+&nbsp;&nbsp;&nbsp;|-- plot
 
-## List of minimum files to have in data directory (for each sample)
+## List of minimum files to have in **data** directory (for each sample)
 
 - cell_boundaries.parquet
 - cell_feature_matrix.h5

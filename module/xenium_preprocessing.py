@@ -102,7 +102,7 @@ def import_xenium(samples_ids:  list,
 
         if use_cell_list == True:
             try:
-                tmp = pd.read_csv(f'{dir_notebook}/coordinates/whole_section/{sample_id}_Whole-section_cells_stats.csv', comment = '#')
+                tmp = pd.read_csv(f'{dir_notebook}/coordinates/region_of_interest/{sample_id}_ROI_cells_stats.csv', comment = '#')
                 tmp_list = list(tmp['Cell ID'])
                 adata = adata[adata.obs['cell_id'].isin(tmp_list)]
             except:

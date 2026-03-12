@@ -185,8 +185,8 @@ def cluster_plot(adata_to_plot,
         if b == 0:
             b=1
         if len(samples_ids) <= 3:
-            a= len(samples_ids)
-            b=0
+            a = len(samples_ids)
+            b = 1
         else:
             a=3
             
