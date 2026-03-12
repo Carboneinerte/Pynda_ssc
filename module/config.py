@@ -5,7 +5,10 @@
 dir_raw = ""
 
 ## Path to where you want to save your processed files
-dir_notebook = ''
+dir_processed = ''
+
+## Path containing the repository
+dir_main = ""
 
 ## Name of your experiment
 # name_dir = ""

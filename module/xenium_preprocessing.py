@@ -8,29 +8,29 @@ from matplotlib.pyplot import rc_context
 from module.misc import list_annotations
 from module.dataviz_analysis import cluster_plot
 
-from module.config_local import dir_notebook, dir_raw
+from module.config_local import dir_processed, dir_raw
 
 
 def create_folders(name_dir:str,
-                   dir_notebook: str = dir_notebook
+                   dir_processed: str = dir_processed
                    ):
-    if not os.path.exists(f"{dir_notebook}/csv/{name_dir}/"):
-        os.makedirs(f"{dir_notebook}/csv/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/csv/{name_dir}/"):
+        os.makedirs(f"{dir_processed}/csv/{name_dir}/")
         print("csv folder created")
-    if not os.path.exists(f"{dir_notebook}/h5ad/{name_dir}/"):
-        os.makedirs(f"{dir_notebook}/h5ad/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/h5ad/{name_dir}/"):
+        os.makedirs(f"{dir_processed}/h5ad/{name_dir}/")
         print("h5ad folder created")
-    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/"):
-        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/"):
+        os.makedirs(f"{dir_processed}/analysis/{name_dir}/")
         print('Analysis folder created')
-    if not os.path.exists(f"{dir_notebook}/plot/{name_dir}/"):
-        os.makedirs(f"{dir_notebook}/plot/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/plot/{name_dir}/"):
+        os.makedirs(f"{dir_processed}/plot/{name_dir}/")
         print('Plotfolder created')
 
 def undernoise_list(samples_ids:list,
                     name_dir:str,
                     dir_raw:str = dir_raw,
-                    dir_notebook:str = dir_notebook,
+                    dir_processed:str = dir_processed,
                     ):
 
     for idx, sample in enumerate(samples_ids):
@@ -57,14 +57,14 @@ def undernoise_list(samples_ids:list,
 
         print(" ")
         
-    pd.Series(list(set_undernoise)).to_csv(f'{dir_notebook}/analysis/{name_dir}/undernoise_{name_dir}.csv')
+    pd.Series(list(set_undernoise)).to_csv(f'{dir_processed}/analysis/{name_dir}/undernoise_{name_dir}.csv')
     list_noise = list(set_undernoise)
     return list_noise
 
 def import_xenium(samples_ids:  list,
                   name_dir:     str,
                   dir_raw:      str = dir_raw,
-                  dir_notebook: str = dir_notebook,
+                  dir_processed: str = dir_processed,
                   trans_min:    int = 40,
                   trans_max:    int = 4000,
                   remove_noise: bool = False,
@@ -72,7 +72,7 @@ def import_xenium(samples_ids:  list,
                   use_cell_list:bool = False):
     '''
     dir_raw (str) : folder containing raw Xenium files
-    dir_notebook (str)
+    dir_processed (str)
     samples_ids (str)
     name_dir (str)
     remove_noise (bool) : remove genes below noise level from a list
@@ -87,6 +87,7 @@ def import_xenium(samples_ids:  list,
         print(f"Will exclude {len(list_noise)} genes")
     print(" ")
     print("## Start importation ##")
+
     for sample_id in samples_ids:
         adata = sc.read_10x_h5(f"{dir_raw}/{sample_id}/cell_feature_matrix.h5")
         df = pd.read_csv(f"{dir_raw}/{sample_id}/cells.csv.gz")
@@ -102,7 +103,7 @@ def import_xenium(samples_ids:  list,
 
         if use_cell_list == True:
             try:
-                tmp = pd.read_csv(f'{dir_notebook}/coordinates/region_of_interest/{sample_id}_ROI_cells_stats.csv', comment = '#')
+                tmp = pd.read_csv(f'{dir_raw}/{sample_id}/{sample_id}_ROI_cells_stats.csv', comment = '#')
                 tmp_list = list(tmp['Cell ID'])
                 adata = adata[adata.obs['cell_id'].isin(tmp_list)]
             except:
@@ -119,9 +120,10 @@ def import_xenium(samples_ids:  list,
         print(f"Sample {sample_id} done")
         print(" ")
         if MMC == True:
-            if not os.path.exists(f"{dir_notebook}/h5ad/{name_dir}/"):
-                os.makedirs(f"{dir_notebook}/h5ad/{name_dir}/")
-            adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
+            if not os.path.exists(f"{dir_processed}/Correlation_Mapping/{name_dir}/"):
+                os.makedirs(f"{dir_processed}/Correlation_Mapping/{name_dir}/")
+                print("Correlation_Mapping folder created")
+            adata.write(f"{dir_processed}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
 
     print(f"Read all {len(samples_ids)} samples")
 
@@ -131,22 +133,22 @@ def import_xenium(samples_ids:  list,
     ### Add a sample column to the metadata
     adata.obs['sample'] = adata.obs_names.map(lambda name: name.split('_')[0])
     # samples = adata.obs['sample'].unique()
-    adata.write(f"{dir_notebook}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
+    adata.write(f"{dir_processed}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
     return adata
 
 def mmc_merge(adata: sc.AnnData,
-              dir_notebook: str,
+              dir_processed: str,
               name_dir: str
               ):
     '''
-    Merge MMC correlation mapping from {dir_notebook}/Correlation_Mapping/ folder
+    Merge MMC correlation mapping from {dir_processed}/Correlation_Mapping/ folder
     MMC files names should start with {name_dir} 
     adata : AnnData object
-    dir_notebook : string
+    dir_processed : string
     name_dir : string
     '''
 
-    dir_corr = f'{dir_notebook}/Correlation_Mapping/'
+    dir_corr = f'{dir_processed}/Correlation_Mapping/{name_dir}/'
 
     list_files = glob.glob(dir_corr + f'{name_dir}*')
 
@@ -260,7 +262,7 @@ def clustering_scanpy(adata: sc.AnnData,
 
 def norm_to_cluster(adata: sc.AnnData,
                     name_dir: str,
-                    # dir_notebook: str = dir_notebook,
+                    # dir_processed: str = dir_processed,
                     pca_compo:int = 10,
                     leiden_resolution:float = 0.7
                     ):

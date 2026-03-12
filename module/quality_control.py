@@ -1,7 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from module.config_local import dir_notebook, dir_raw
+from module.config_local import dir_processed, dir_raw, dir_main
 
 
 def plot_mcc_density (sample_1: list,
@@ -9,9 +9,10 @@ def plot_mcc_density (sample_1: list,
                       save_plot: bool = False,
                       save_name : str = 'CC_mmc.png'
                       ):
+    
     for sample in sample_1:
         print(sample)
-        df = pd.read_csv(f'D:/Jupyter_Notebook/Xenium_Jupyter_notebook/Correlation_Mapping/{name_dir}_{sample}_CorrelationMapping.csv', comment = "#")
+        df = pd.read_csv(f'{dir_processed}/Correlation_Mapping/{name_dir}/{name_dir}_{sample}_CorrelationMapping.csv', comment = "#")
         df['sample'] = df['cell_id'].map(lambda name: name.split('_')[0])
         df_temp = df.filter(['sample', 'subclass_correlation_coefficient'])
         if "df_all" not in locals():
@@ -35,7 +36,7 @@ def plot_mcc_density (sample_1: list,
         save_name = f'CC_{sample_1[0]}.png'
 
     if save_plot:
-        plt.savefig(f'{dir_notebook}/plot/{name_dir}/{save_name}')
+        plt.savefig(f'{dir_processed}/plot/{name_dir}/{save_name}')
 
 def desc_metrics(samples_ids:list,
                  name_dir:str,
@@ -44,8 +45,6 @@ def desc_metrics(samples_ids:list,
                  plot_average:bool = True,
                  save_plot: bool = False
                  ):
-    if reference:
-        reference_dataset = pd.read_csv('data/reference_dataset.csv')
     
     parameters_to_plot = ['region_area', 'total_high_quality_decoded_transcripts','fraction_transcripts_decoded_q20', 'decoded_transcripts_per_100um2','estimated_number_of_false_positive_transcripts_per_cell',
                       'num_cells_detected', 'fraction_transcripts_assigned', 'median_genes_per_cell', 'median_transcripts_per_cell' ]
@@ -65,7 +64,11 @@ def desc_metrics(samples_ids:list,
                         'fraction_transcripts_assigned', 'median_genes_per_cell', 'median_transcripts_per_cell' ]
 
     if reference:
-        min_1 = 1
+        try:
+            reference_dataset = pd.read_csv(f'{dir_main}/reference_files/reference_dataset.csv')
+            min_1 = 1
+        except:
+            print('No reference dataset found')
     else:
         min_1 = 0
     max_1 = min_1 + len(files_content) - 1 
@@ -85,7 +88,7 @@ def desc_metrics(samples_ids:list,
         ax.tick_params(axis = 'x', rotation = 90, direction = 'in', pad = -80)
 
     if save_plot:
-        fig.savefig(f'{dir_notebook}/plot/{name_dir}/{name_dir}_QC.svg')
+        fig.savefig(f'{dir_processed}/plot/{name_dir}/{name_dir}_QC.svg')
 
 def desc_metrics_double(samples_ids_1: list,
                         samples_ids_2: list,
@@ -95,9 +98,7 @@ def desc_metrics_double(samples_ids_1: list,
                         plot_average: bool = True,
                         save_plot: bool = False
                         ):
-    
-    reference_dataset = pd.read_csv('data/reference_dataset.csv')
-    
+
     parameters_to_plot = ['region_area', 'total_high_quality_decoded_transcripts','fraction_transcripts_decoded_q20',
                             'decoded_transcripts_per_100um2','estimated_number_of_false_positive_transcripts_per_cell','num_cells_detected',
                             'fraction_transcripts_assigned', 'median_genes_per_cell', 'median_transcripts_per_cell' ]
@@ -121,7 +122,11 @@ def desc_metrics_double(samples_ids_1: list,
                 files_content_2 = pd.DataFrame(file_content_2)
 
     if reference:
-        min_1 = 1
+        try:
+            reference_dataset = pd.read_csv(f'{dir_main}/reference_files/reference_dataset.csv')
+            min_1 = 1
+        except:
+            print('No reference dataset found')
     else:
         min_1 = 0
     max_1 = min_1 + len(files_content_1) - 1 
@@ -143,4 +148,4 @@ def desc_metrics_double(samples_ids_1: list,
         ax.set_title(parameter)
         ax.tick_params(axis = 'x', rotation = 90, direction = 'in', pad = -60)
     if save_plot:
-        fig.savefig(f'{dir_notebook}/plot/{name_dir}/{name_dir}_QC.svg')
+        fig.savefig(f'{dir_processed}/plot/{name_dir}/{name_dir}_QC.svg')

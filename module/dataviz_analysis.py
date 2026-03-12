@@ -27,26 +27,26 @@ from anndata import ImplicitModificationWarning
 
 warnings.simplefilter('ignore', ImplicitModificationWarning)
 
-
-from module.config_local import dir_notebook
+from module.config_local import dir_processed
 
 def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
                          name_dir : str,
-                         dir_notebook : str = dir_notebook,
+                         dir_processed : str = dir_processed,
                          cluster_to_use : str = 'cell_type_newnum_final',
                          individual_plot : bool = True,
                          save_plot : bool = False,
                          cmap_ : str = 'hls',
+                         size:float = 0.05,
                         ):
     '''
     Plot UMAP with all samples combined or with individual samples.
     '''
 
-    adata_to_plot.obsm['umap'] = adata_to_plot.obsm['reduced_pc_20_umap']
+    adata_to_plot.obsm['umap'] = adata_to_plot.obsm['X_umap']
     adata_to_plot.obs['umap-1'] = adata_to_plot.obsm['umap'][:, 0]
     adata_to_plot.obs['umap-2'] = adata_to_plot.obsm['umap'][:, 1]
-    adata_to_plot.obs['umap-3'] = adata_to_plot.obsm['reduced_pc_20_umap'][:, 0]
-    adata_to_plot.obs['umap-4'] = adata_to_plot.obsm['reduced_pc_20_umap'][:, 1]
+    adata_to_plot.obs['umap-3'] = adata_to_plot.obsm['umap'][:, 0]
+    adata_to_plot.obs['umap-4'] = adata_to_plot.obsm['umap'][:, 1]
 
     adata_to_plot.obs[cluster_to_use] = adata_to_plot.obs[cluster_to_use].astype(str)
     num_clusters = len(adata_to_plot.obs[cluster_to_use].astype(int).unique())
@@ -63,7 +63,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         axs = axs.flatten()
 
         def plot_umap(adata_to_plot, color_column, ax, title=None):
-            scatter = ax.scatter(adata_to_plot.obs['umap-3'], adata_to_plot.obs['umap-4'], c=adata_to_plot.obs[color_column], s=0.05, alpha=0.8)
+            scatter = ax.scatter(adata_to_plot.obs['umap-3'], adata_to_plot.obs['umap-4'], c=adata_to_plot.obs[color_column], s=size, alpha=0.8)
             ax.set_title(title)
             ax.axis('off')
         samples_ids = adata_to_plot.obs['sample'].unique()
@@ -74,16 +74,20 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
             
             for cluster_id, centroid in cluster_centroids.iterrows():
                 axs[i].text(centroid['umap-3'], centroid['umap-4'], str(cluster_id), color='black', fontsize=12, ha = 'center')
+                axs[i].set_aspect('equal', adjustable='box')
+
+        
+        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.3)
 
         plt.show()
         
         if save_plot == True:
             try:
-                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
 
             except:
-                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
-                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+                os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
 
     ####
     else:
@@ -115,18 +119,19 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.show()
         if save_plot == True:
             try:
-                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
+                plt.savefig(f"{dir_processed}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
             except:
-                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
-                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
+                os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
 
 def cluster_plot(adata_to_plot,
                  name_dir,
-                 dir_notebook: str = dir_notebook,
+                 dir_processed: str = dir_processed,
                  cluster_to_use : str = 'cell_type_newnum_final',
                  cluster_to_map : list = ['all'],
                  cmap_ : str = 'tab20b',
-                 save_plot : bool = False
+                 save_plot : bool = False,
+                 size: float = 0.01,
                  ):
     
     '''
@@ -140,7 +145,7 @@ def cluster_plot(adata_to_plot,
     
     :param adata_to_plot: Description
     :param name_dir: Description
-    :param dir_notebook: Description
+    :param dir_processed: Description
     :param cluster_to_use: Description
     :type cluster_to_use: str
     :param cluster_to_map: Description
@@ -215,7 +220,7 @@ def cluster_plot(adata_to_plot,
                     colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
                 else:
                     colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
-                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=0.01, marker = 'o', label=cluster_data[label_to_use].unique()[0])
+                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=size, marker = 'o', label=cluster_data[label_to_use].unique()[0])
                 axs[idx].set_title(f"Sample {sample}")
                 axs[idx].xaxis.set_tick_params(labelbottom=False)
                 axs[idx].yaxis.set_tick_params(labelleft=False)
@@ -226,14 +231,14 @@ def cluster_plot(adata_to_plot,
         
         if save_plot == True:
             try:
-                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
             except:
-                os.makedirs(f"{dir_notebook}/plot/{name_dir}/{today}/")
-                plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+                os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
+                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
 
 def polygonplot_dataprep(adata_main: sc.AnnData,
                          sample_to_plot : str,
-                         dir_notebook : str = dir_notebook,
+                         dir_processed : str = dir_processed,
                          cluster_to_use : str = 'cell_type_newnum_final',
                          cmap_ : str = 'tab20b'
                          ):
@@ -247,8 +252,8 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
     :param adata_main: main AnnData object
     :param sample_to_plot: Full name from 'sample' columns
     :type sample_to_plot: str
-    :param dir_notebook: Description
-    :type dir_notebook: str
+    :param dir_processed: Description
+    :type dir_processed: str
     :param cluster_to_use: Description
     :type cluster_to_use: str
     :param cmap_: Will be used for the polygons colors
@@ -266,7 +271,7 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
 
     adata_plot = adata_main[adata_main.obs['sample']==all_samples[sample_position]]
     
-    cells_geo = gpd.read_file(f'{dir_notebook}/coordinates/polygons/{all_samples[sample_position]}_cells.geojson')
+    cells_geo = gpd.read_file(f'{dir_processed}/coordinates/polygons/{all_samples[sample_position]}_cells.geojson')
     cells_geo['centroid'] = cells_geo['geometry'].centroid
     cells_geo['x_coor'] = cells_geo['centroid'].x
     cells_geo['y_coor'] = cells_geo['centroid'].y
@@ -308,7 +313,7 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
 def polygonplot_plot(df: pd.DataFrame,
                      cells_geo:gpd.GeoDataFrame,
                      name_dir: str,            
-                     dir_notebook: str = dir_notebook,
+                     dir_processed: str = dir_processed,
                      cluster_to_use : str = 'cell_type_newnum_final',
                      gene_ : str = None,
                      region_ : str = None,
@@ -442,7 +447,7 @@ def polygonplot_plot(df: pd.DataFrame,
 
     if save_plot:
         try:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
+            plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
         except:
             os.mkdirs()
     plt.show()
@@ -450,7 +455,7 @@ def polygonplot_plot(df: pd.DataFrame,
 def polygonplot_plot_gradient(
         df, cells_geo,
         name_dir: str,
-        dir_notebook: str = dir_notebook,
+        dir_processed: str = dir_processed,
         gene_: str = None,
         region_: str = None,
         region_only: str = None,
@@ -544,7 +549,7 @@ def polygonplot_plot_gradient(
 
     if save_plot:
         try:
-            plt.savefig(f"{dir_notebook}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
+            plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
         except:
             os.mkdirs()
     plt.show()
@@ -556,7 +561,7 @@ def DEG_one_condition(adata: sc.AnnData,
                       grp_ctrl: str,
                       filters_bool: bool,
                       filters_dict: dict,
-                      dir_notebook: str = dir_notebook,):
+                      dir_processed: str = dir_processed,):
 
     dfs = []
     dfs_filter = []
@@ -617,17 +622,17 @@ def DEG_one_condition(adata: sc.AnnData,
 
   
 
-    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}"):
-        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}")
+    if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}"):
+        os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}")
 
-    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_no-filter.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_no-filter.xlsx', engine='xlsxwriter')
     for j in range(0,len(dfs)):
         # print(j, " : ", all_cell_type_sheet[j])
         dfs[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
     writer.close()
 
     if filters_bool:
-        writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_filter.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}/DEG_{cluster_to_use}_filter.xlsx', engine='xlsxwriter')
         for j in range(0,len(dfs_filter)):
             dfs_filter[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
         writer.close()
@@ -642,7 +647,7 @@ def DEG_two_conditions(adata: sc.AnnData,
                       grp_ctrl: str,
                       filters_bool: bool,
                       filters_dict: dict,
-                      dir_notebook: str = dir_notebook,
+                      dir_processed: str = dir_processed,
 ):
     dfs = []
     dfs_filter = []
@@ -708,16 +713,16 @@ def DEG_two_conditions(adata: sc.AnnData,
             dfs.append(dat)
             clear_output()
             
-        if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}"):
-            os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}")
+        if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}"):
+            os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}")
 
-        writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG.xlsx', engine='xlsxwriter')
         for j in range(0,len(dfs)):
             dfs[j].to_excel(writer, sheet_name=all_group_C2_sheet[j], index=False)
         writer.close()
 
         if filters_bool:
-            writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG_filter.xlsx', engine='xlsxwriter')
+            writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}/{group_C1}_all_{cluster_to_use_2}_DEG_filter.xlsx', engine='xlsxwriter')
             for j in range(0,len(dfs_filter)):
                 dfs_filter[j].to_excel(writer, sheet_name=all_group_C2_sheet[j], index=False)
             writer.close()
@@ -737,7 +742,7 @@ def deseq2_one_condition(adata:sc.AnnData,
                          filters_bool: bool,
                          filters_dict: dict,
                          pseudoreplicates: int = 3,
-                         dir_notebook: str = dir_notebook,
+                         dir_processed: str = dir_processed,
                          ):
 
     list_celltypes = adata.obs[cluster_to_use].unique()
@@ -794,15 +799,15 @@ def deseq2_one_condition(adata:sc.AnnData,
         ddf.append(de)
         ddf_filter.append(de_filter)
 
-    if not os.path.exists(f"{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
-        os.makedirs(f"{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")
+    if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
+        os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")
 
-    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter')
     for j in range(len(list_celltypes)):
         ddf[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
     writer.close()
 
-    writer = pd.ExcelWriter(f'{dir_notebook}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
     for j in range(len(list_celltypes)):
         ddf_filter[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
     writer.close()

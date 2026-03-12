@@ -1,9 +1,11 @@
 import pandas as pd
+from module.config_local import dir_main
 
 def list_annotations():
     list_anno = [
         "sample","ZT", "Genotype", "run", "cell_type_final", "region_automap_name","transcript_counts",
-        "cell_class","circascore","x_centroid","y_centroid", "Sex", 'Neurotransmitter',"celltype_number", 'plaque', "circascorev2",
+        "cell_class","circascore","x_centroid","y_centroid", "Sex", 'Neurotransmitter',"celltype_number", 'plaque',
+        "circascorev2",
                  ]
     return list_anno
 
@@ -35,18 +37,9 @@ def cell_class():
 def sample_name_import(name_experiment:str):
     
     dict_exp_name = {
-        'SD1' : ["SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21",],
-        'all-samples' :["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2","3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
-        'circa' : ['circa2-ZT01','circa2-ZT05','circa2-ZT09','circa2-ZT13','circa2-ZT17','circa2-ZT21','circa4-IGM-ZT01',
-                   'circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21','circa4-Salk-ZT01',
-                   'circa4-Salk-ZT05','circa4-Salk-ZT09','circa4-Salk-ZT13','circa4-Salk-ZT17','circa4-Salk-ZT21'],
-        'circa2' : ['circa2-ZT01','circa2-ZT05','circa2-ZT09','circa2-ZT13','circa2-ZT17','circa2-ZT21'],
         'circa-SD' : ['circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21',
                    "SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21"],
         'all-samples-C0' : ["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2"],
-        'all-samples-C1' : ["3159-2", "3161-1"],
-        'all-samples-C2' : ["3159-3","3161-2"],
-        'all-samples-C3' : ["3159-4", "3161-3"],
         'all-samples-C123' : ["3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
         'all-samples-combined' :["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2","3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
         "liver-cancer" : ['hLiver-cancer','hLiver-nondiseased']
@@ -395,7 +388,7 @@ def genes_list(type_:str):
     return dict_list[type_]
 
 def prot_name_annot():
-    df_annotation = pd.read_csv('Mouse5K_metadata.csv')
+    df_annotation = pd.read_csv(f'{dir_main}/reference_files/Mouse5K_metadata.csv')
     full_dict = dict(zip(df_annotation['gene_name'], df_annotation['protein_name']))
     ens_dict = dict(zip(df_annotation['gene_name'], df_annotation['gene_id']))
     alt_dict = dict(zip(df_annotation['gene_name'], df_annotation['Alternative names']))

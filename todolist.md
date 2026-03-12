@@ -4,7 +4,7 @@
     - [ ] Spacia was tested but long run and suboptimal result
     - [ ] CellChat tested, promising, allow condition comparisons
 
-- [ ] Update to python 3.11 to use holoviz (or create separate env for plotting?)
+- [ ] Update to python 3.11 to use holoviz
 
 # Metacycle and CircaComapre
 - [ ] Add step to check if "ZT" column exist in data

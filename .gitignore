@@ -17,3 +17,4 @@ plot/
 .idea
 test_mistic.ipynb
 module/config_local.py
+notebook_in_use
