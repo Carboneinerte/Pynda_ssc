@@ -1,5 +1,10 @@
 ## To do list before starting the analysis:
 - Clone or copy repository from Github (main branch) where you want to store it. It will be your "dir_main" folder.
+- Config git
+```
+git config user.name 'yourusername'
+git config user.email 'youremail'
+```
 - Install Conda and create environment
     - On Jetstream, avoid installing the env in /home/, prefer to install it in /media/volume/...
 ```{python}
