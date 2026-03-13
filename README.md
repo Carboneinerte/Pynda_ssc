@@ -20,10 +20,9 @@ pip install -r requirements.txt
 "name_dir" : ["sample1", "sample2", etc.],
 ```
 
-- Create a folder named "notebook_in_use" in "dir_main" and copy the notebook you want to use inside it
-    - ideally, rename it to remember which on you used
+- To start using the notebooks, **copy** one from "notebooks_blank" and rename it. It must ends with "..._in_use.ipynb". 
 
-**DO NOT MODIFY OR USE THE NOTEBOOKS DIRECTLY IN "dir_main"**
+- Please, do not modufy or use the notebooks in "notebooks_blank". You won't be able to import function from the module anyway.
 
 ### Optional
 - Draw region of interest in Xenium explorer and export the list of cells
@@ -41,7 +40,7 @@ pip install -r requirements.txt
 &nbsp;|-- main (contains git repo) &nbsp;&nbsp;(="dir_main")\
 &nbsp;&nbsp;&nbsp;|-- reference_files\
 &nbsp;&nbsp;&nbsp;|-- module (contains the .py files with the functions used in notebooks)\
-&nbsp;&nbsp;&nbsp;|-- notebook_in_use (contains the notebook you will use, not tracked by Git)\
+&nbsp;&nbsp;&nbsp;|-- notebooks_blank (contains blank notebook you will copy into your root folder to use)\
 &nbsp;|-- raw_data &nbsp;&nbsp;(="dir_raw")\
 &nbsp;&nbsp;&nbsp;|-- "Sample1"\
 &nbsp;&nbsp;&nbsp;|-- "Sample2"\
@@ -49,7 +48,7 @@ pip install -r requirements.txt
 &nbsp;|-- processed_data &nbsp;&nbsp;(="dir_processed")\
 &nbsp;&nbsp;&nbsp;|-- analysis\
 &nbsp;&nbsp;&nbsp;|-- coordinates\
-&nbsp;&nbsp;&nbsp;|-- Coorelation_Mapping
+&nbsp;&nbsp;&nbsp;|-- Coorelation_Mapping\
 &nbsp;&nbsp;&nbsp;|-- csv &nbsp;&nbsp;(Will also contain parquet files)\
 &nbsp;&nbsp;&nbsp;|-- h5ad\
 &nbsp;&nbsp;&nbsp;|-- plot
@@ -73,11 +72,11 @@ pip install -r requirements.txt
 - Rainbow Csv
 
 ## Useful links
-https://github.com/seandavi/awesome-single-cell?tab=readme-ov-file#experimental-design
-https://www.w3schools.com/python/
-https://www.sc-best-practices.org/preamble.html
-https://scanpy.readthedocs.io/en/stable/
-https://squidpy.readthedocs.io/en/stable/
+- https://github.com/seandavi/awesome-single-cell?tab=readme-ov-file#experimental-design
+- https://www.w3schools.com/python/
+- https://www.sc-best-practices.org/preamble.html
+- https://scanpy.readthedocs.io/en/stable/
+- https://squidpy.readthedocs.io/en/stable/
 
 
 <!--

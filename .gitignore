@@ -18,3 +18,5 @@ plot/
 test_mistic.ipynb
 module/config_local.py
 notebook_in_use
+*_in_use.ipynb
+
