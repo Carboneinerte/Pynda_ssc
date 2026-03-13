@@ -1,10 +1,11 @@
 ## To do list before starting the analysis:
 - Clone or copy repository from Github (main branch) where you want to store it. It will be your "dir_main" folder.
 - Install Conda and create environment
+    - On Jetstream, avoid installing the env in /home/, prefer to install it in /media/volume/...
 ```{python}
-conda create -n "env_name" python==3.11
+conda create --prefix=/media/volume/.../yourEnvName python==3.11
 
-conda activate "env_name"
+conda activate yourEnvName
 
 pip install -r requirements.txt
 ```
@@ -15,7 +16,7 @@ pip install -r requirements.txt
 - Define the name of the experiment (**name_dir**)
 - Define the name of each samples
     - Rename folders in "name_dir" accordingly
-    - Add the names as a list in the function "sample_name_import" in module/misc.py
+    - Add the names as a list in the function "sample_name_import" in module/config_local.py
 ```{python}
 "name_dir" : ["sample1", "sample2", etc.],
 ```

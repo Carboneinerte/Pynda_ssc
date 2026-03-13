@@ -34,20 +34,7 @@ def cell_class():
         }
     return dict_temp
 
-def sample_name_import(name_experiment:str):
-    
-    dict_exp_name = {
-        'circa-SD' : ['circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21',
-                   "SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21"],
-        'all-samples-C0' : ["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2"],
-        'all-samples-C123' : ["3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
-        'all-samples-combined' :["2505-1", "2505-2", "2670-1", "3159-1","3160-1", "3160-2","3159-2", "3161-1","3159-3","3161-2","3159-4", "3161-3"],
-        "liver-cancer" : ['hLiver-cancer','hLiver-nondiseased']
-        }
-    
-    samples_ids = dict_exp_name[name_experiment]
 
-    return samples_ids
 
 def genes_list(type_:str):
     
@@ -232,7 +219,7 @@ def genes_list(type_:str):
                   "Zp1","Zp3","Zscan2","Zscan21","Zswim5","Zswim9","Zup1","Zyx","Zzef1","a"
                   ],
 
-        'panel_v1' : ['2010300C02Rik','Acsbg1','Acta2','Acvrl1','Adamts2','Adamtsl1','Adgrl4','Aldh1a2','Angpt1','Ano1','Aqp4','Arc','Arhgap12','Arhgap25','Arhgap6','Arhgef28','Bcl11b','Bdnf','Bhlhe22','Bhlhe40','Btbd11','Cabp7','Cacna2d2','Calb1','Calb2','Car4','Carmn',
+    'panel_v1' : ['2010300C02Rik','Acsbg1','Acta2','Acvrl1','Adamts2','Adamtsl1','Adgrl4','Aldh1a2','Angpt1','Ano1','Aqp4','Arc','Arhgap12','Arhgap25','Arhgap6','Arhgef28','Bcl11b','Bdnf','Bhlhe22','Bhlhe40','Btbd11','Cabp7','Cacna2d2','Calb1','Calb2','Car4','Carmn',
                       'Cbln1','Cbln4','Ccn2','Cd24a','Cd300c2','Cd44','Cd53','Cd68','Cd93','Cdh13','Cdh20','Cdh4','Cdh6','Cdh9','Chat','Chodl','Chrm2','Cldn5','Clmn','Cntn6','Cntnap4','Cntnap5b','Cobll1','Col19a1','Col1a1','Col6a1','Cort','Cplx3','Cpne4','Cpne6','Cpne8',
                       'Crh','Cspg4','Cux2','Cwh43','Cyp1b1','Dcn','Deptor','Dkk3','Dner','Dpy19l1','Dpyd','Ebf3','Emcn','Epha4','Eya4','Fezf2','Fgd5','Fhod3','Fibcd1','Fign','Fmod','Fn1','Fos','Foxp2','Gad1','Gad2','Gadd45a','Galnt14','Garnl3','Gfap','Gfra2','Gjb2','Gjc3',
                       'Gli3','Gm19410','Gm2115','Gng12','Gpr17','Grik3','Gsg1l','Gucy1a1','Hapln1','Hat1','Hpcal1','Hs3st2','Htr1f','Id2','Igf1','Igf2','Igfbp4','Igfbp5','Igfbp6','Igsf21','Ikzf1','Inpp4b','Kcnh5','Kcnmb2','Kctd12','Kctd8','Kdr','Lamp5','Laptm5','Ly6a',
