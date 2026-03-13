@@ -1,10 +1,17 @@
 # Spatial Analysis
-- [X] Cell neighbors (AD project, squidpy)
+- [X] Cell neighbors
 - [ ] Cell to cell communication (L-R) : ongoing (AG)
     - [ ] Spacia was tested but long run and suboptimal result
     - [ ] CellChat tested, promising, allow condition comparisons
 
-- [ ] Update to python 3.11 to use holoviz
+- [X] Update to python 3.11 to use holoviz
+
+- Manual map
+    - [ ] Cell list
+    - [ ] Coordinates
+- DeSeq2
+    - [X] One condition
+    - [ ] Two conditions
 
 # Metacycle and CircaComapre
 - [ ] Add step to check if "ZT" column exist in data

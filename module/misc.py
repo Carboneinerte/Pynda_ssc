@@ -1,5 +1,9 @@
 import pandas as pd
-from module.config_local import dir_main
+from module.config_local import dir_main,dir_processed
+from datetime import datetime
+today = datetime.today().strftime('%Y-%m-%d')
+import os
+import matplotlib.pyplot as plt 
 
 def list_annotations():
     list_anno = [
@@ -34,7 +38,18 @@ def cell_class():
         }
     return dict_temp
 
-
+def save_figure(fig:plt.figure,
+                suffix:str,
+                name_dir:str,
+                dir_processed:str=dir_processed,
+                format:str = "svg"):
+    try:
+        fig.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_quality-metrics_Xeniumcellsegmentation.{format}",
+                dpi = 300, transparent = True, format = format)
+    except:
+        os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
+        fig.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_{suffix}.{format}",
+                dpi = 300, transparent = True, format = format)
 
 def genes_list(type_:str):
     
