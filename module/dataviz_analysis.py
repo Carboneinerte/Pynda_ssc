@@ -4,27 +4,20 @@ from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
 import progressbar
 import geopandas as gpd
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from IPython.display import clear_output
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import scanpy as sc
 from pydeseq2.dds import DeseqDataSet
 from pydeseq2.ds import DeseqStats
 import random
-import pandas as pd
-import scanpy as sc
-import numpy as np
 import warnings
 from anndata import ImplicitModificationWarning
 from module.misc import save_figure
-
 warnings.simplefilter('ignore', ImplicitModificationWarning)
-
 from module.config_local import dir_processed
 
 def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
@@ -80,14 +73,8 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.show()
         
         if save_plot == True:
-            suffix_save = f'UMAP_{cluster_to_use}' 
+            suffix_save = f'UMAP_indi_{cluster_to_use}' 
             save_figure(fig, suffix_save, name_dir, format='png')
-            # try:
-            #     plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
-
-            # except:
-            #     os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
-            #     plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
 
     ####
     else:
@@ -118,11 +105,8 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.legend(markerscale=20, scatterpoints=1000, bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0)
         plt.show()
         if save_plot == True:
-            try:
-                plt.savefig(f"{dir_processed}/plot/{name_dir}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
-            except:
-                os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
-                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_all.png", dpi = 300, transparent = True)
+            suffix_save = f'UMAP_all_{cluster_to_use}' 
+            save_figure(fig, suffix_save, name_dir, format='png')
 
 def cluster_plot(adata_to_plot,
                  name_dir,
@@ -195,7 +179,7 @@ def cluster_plot(adata_to_plot,
         else:
             a=3
             
-        _, axs = plt.subplots(b,a,
+        fig, axs = plt.subplots(b,a,
                                 figsize=(15,6))
         axs = axs.flatten()# Mapping of clusters
 
@@ -230,11 +214,8 @@ def cluster_plot(adata_to_plot,
         plt.show()
         
         if save_plot == True:
-            try:
-                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
-            except:
-                os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
-                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_map_{cluster_to_use}.png", dpi = 300, transparent = True)
+            suffix_save = f'clusterplot_{cluster_to_use}' 
+            save_figure(fig, suffix_save, name_dir, format='png')
 
 def polygonplot_dataprep(adata_main: sc.AnnData,
                          sample_to_plot : str,
@@ -445,11 +426,10 @@ def polygonplot_plot(df: pd.DataFrame,
         ax.legend(handles=legend_patches,     loc='center left', 
             bbox_to_anchor=(1, 0.5), title='Cell Type')
 
-    if save_plot:
-        try:
-            plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
-        except:
-            os.mkdirs()
+    if save_plot == True:
+        suffix_save = f'plot_{region_}_{gene_}' 
+        save_figure(fig, suffix_save, name_dir, format='png')
+
     plt.show()
 
 def polygonplot_plot_gradient(
@@ -546,12 +526,11 @@ def polygonplot_plot_gradient(
     ##### Add the custom legend
     ax.legend(handles=legend_patches,     loc='center left', 
         bbox_to_anchor=(1, 0.5), title='Cell Type')
+    
+    if save_plot == True:
+        suffix_save = f'plot_{region_}_{gene_}' 
+        save_figure(fig, suffix_save, name_dir, format='png')
 
-    if save_plot:
-        try:
-            plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/plot_{region_}_{gene_}.png", format ="png", dpi=600, transparent=True)
-        except:
-            os.mkdirs()
     plt.show()
 
 def DEG_one_condition(adata: sc.AnnData,
@@ -619,8 +598,6 @@ def DEG_one_condition(adata: sc.AnnData,
         print('Extraction done')
 
     bar.finish()
-
-  
 
     if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}"):
         os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}")
