@@ -21,6 +21,7 @@ import scanpy as sc
 import numpy as np
 import warnings
 from anndata import ImplicitModificationWarning
+from module.misc import save_figure
 
 warnings.simplefilter('ignore', ImplicitModificationWarning)
 
@@ -53,7 +54,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
     if individual_plot == True:
         ## Draw UMAP
         b = int(adata_to_plot.obs['sample'].nunique() / 2)
-        _, axs = plt.subplots(b,2,
+        fig, axs = plt.subplots(b,2,
                                 figsize=(15,25)
     
                                 )
@@ -79,12 +80,14 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.show()
         
         if save_plot == True:
-            try:
-                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+            suffix_save = f'UMAP_{cluster_to_use}' 
+            save_figure(fig, suffix_save, name_dir, format='png')
+            # try:
+            #     plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
 
-            except:
-                os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
-                plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
+            # except:
+            #     os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
+            #     plt.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_UMAP_{cluster_to_use}.png", dpi = 300, transparent = True)
 
     ####
     else:
