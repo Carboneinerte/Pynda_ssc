@@ -1,8 +1,11 @@
 import pandas as pd
 import seaborn as sns
+import numpy as np
 import matplotlib.pyplot as plt
 from module.config_local import dir_processed, dir_raw, dir_main
-
+from module.misc import save_figure
+from datetime import datetime
+today = datetime.today().strftime('%Y-%m-%d')
 
 def plot_mcc_density (sample_1: list,
                       name_dir: str,
@@ -149,3 +152,53 @@ def desc_metrics_double(samples_ids_1: list,
         ax.tick_params(axis = 'x', rotation = 90, direction = 'in', pad = -60)
     if save_plot:
         fig.savefig(f'{dir_processed}/plot/{name_dir}/{name_dir}_QC.svg')
+
+def add_jitter(x, scale=0.5):
+    return x + np.random.uniform(-scale, scale, size=len(x))
+
+def noise_threshold_ploting(sample:str,
+                            save_plot:bool = False):
+    print('Start Sample :', sample)
+
+    df = pd.read_parquet(f'D:/Xenium/{sample}/transcripts.parquet',
+                            filters=[("qv",">=",20)]
+                            )       
+
+    data = pd.DataFrame({'feature_name': df.feature_name.value_counts().index,'count' : df.feature_name.value_counts()})
+    data.sort_index(inplace=True)
+
+    data['type'] = data['feature_name'].apply(lambda x: x.split('_')[0])
+
+    percentile_threshold:float = 99.5
+    threshold = np.percentile(data[(data['type']=="NegControlProbe") | (data['type']=="NegControlCodeword")]['count'].values,percentile_threshold)
+    print('threshold = ', threshold)
+
+    data['logfoldovernoise'] = data['count'].apply(lambda x: np.log(x / threshold))
+
+    type2 = {"DeprecatedCodeword" : "DeprecatedCodeword",
+            "NegControlCodeword" : 'NegControlCodeword',
+            "NegControlProbe" : "NegControlProbe",
+            "UnassignedCodeword" : "UnassignedCodeword"}
+
+    data['type2'] = data['type'].map(type2)
+    data['type2'] = data['type2'].fillna('Gene')
+
+    categories = ['Gene', "DeprecatedCodeword","NegControlCodeword","NegControlProbe","UnassignedCodeword"]
+
+    def add_jitter(x, scale=0.5):
+        return x + np.random.uniform(-scale, scale, size=len(x))
+
+    data['Jittered_Category'] = data['type2'].apply(lambda x: categories.index(x))
+    data['Jittered_Category'] = add_jitter(data['Jittered_Category'])
+    fig = plt.figure()
+    plt.scatter(data['Jittered_Category'], data['logfoldovernoise'], alpha=0.5, s=1, color = 'black')
+    plt.xticks(ticks=range(len(categories)), labels=categories)
+    plt.ylabel('LogFold Over Noise')
+    plt.xticks(rotation=45)
+    plt.hlines(y=0, xmin=-0.5,xmax=4.5, linestyles='dashed', color = 'red', label='99.5 percentile')
+    plt.title(f'LFG over noise - {sample}')
+    plt.legend()
+    plt.show()
+
+    if save_plot:
+        save_figure(fig,'LF_over_noise', name_dir=sample, dir_processed=dir_processed, format = "svg")

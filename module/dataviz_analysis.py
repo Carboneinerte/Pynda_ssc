@@ -4,15 +4,12 @@ from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
 import progressbar
 import geopandas as gpd
-from IPython.display import display
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from IPython.display import clear_output
-import pytz
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import scanpy as sc
