@@ -23,24 +23,21 @@ git config user.email 'youremail'
 
     conda activate yourEnvName
 
-    pip install -r requirements.txt
-    ```
+pip install -r requirements.txt
 
--   Copy module/config.py and rename it as module/config_local.py
-
-    -   Define the folder containing raw files (**dir_raw**)
-    -   Define the folder containing processed files (**dir_processed**)
-
--   Define the name of the experiment (**name_dir**)
-
--   Define the name of each samples
-
-    -   Rename folders in "name_dir" accordingly
-    -   Add the names as a list in the function "sample_name_import" in module/config_local.py
-
-    ```python
-    "name_dir" : ["sample1", "sample2", etc.],
-    ```
+pip install leidenalg, xlsxwriter
+```
+- Copy module/config.py and rename it as module/config_local.py
+    - Define the folder containing raw files (**dir_raw**)
+    - Define the folder containing processed files (**dir_processed**)
+    
+- Define the name of the experiment (**name_dir**)
+- Define the name of each samples
+    - Rename folders in "name_dir" accordingly
+    - Add the names as a list in the function "sample_name_import" in module/config_local.py
+```{python}
+"name_dir" : ["sample1", "sample2", etc.],
+```
 
 -   To start using the notebooks, **copy** one from "notebooks_blank" and rename it. It must ends with "...\_in_use.ipynb".
 

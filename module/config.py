@@ -12,3 +12,8 @@ dir_main = ""
 
 ## Name of your experiment
 # name_dir = ""
+
+# order of cell types for plotting
+# order-list = 
+
+#Default colors?
