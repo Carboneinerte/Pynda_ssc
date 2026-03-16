@@ -840,6 +840,17 @@ def interactive_volcano_plot(result_list:list,
                              pval_thshld:float = 0.05,
                              FC_thshld:float = 0.26,
                              ):
+    
+    '''
+    Plot interractive volcano plot for quick exploration of the result. Cannot be saved at the moment.
+    result_list = output from DEG analysis. Only work for one condition DEG for now
+    deg_method = method of deg used. either wilcoxon or DeSeq2 for now
+    key = element you want to plot (specific cell type for instance)
+    ctrl_grp and test_grp = name of each group to avoid double plotting
+    pval_thrshld = threshold for P-VALUE significance (default = 0.05)
+    FC_thrshld = Threshold for logfoldchanges significance (default = 0.26 which ~= 1.2 FC)
+    '''
+    
     if deg_method == 'wilcoxon':
         logstr = 'logfoldchanges'
         pval_str = 'pvals'
