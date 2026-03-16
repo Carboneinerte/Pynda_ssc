@@ -44,7 +44,7 @@ def save_figure(fig:plt.figure,
                 dir_processed:str=dir_processed,
                 format:str = "svg"):
     try:
-        fig.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_quality-metrics_Xeniumcellsegmentation.{format}",
+        fig.savefig(f"{dir_processed}/plot/{name_dir}/{today}/{name_dir}_{suffix}.{format}",
                 dpi = 300, transparent = True, format = format)
     except:
         os.makedirs(f"{dir_processed}/plot/{name_dir}/{today}/")
