@@ -8,6 +8,8 @@ conda create --prefix=/media/volume/.../yourEnvName python==3.11
 conda activate yourEnvName
 
 pip install -r requirements.txt
+
+pip install leidenalg, xlsxwriter
 ```
 - Copy module/config.py and rename it as module/config_local.py
     - Define the folder containing raw files (**dir_raw**)
