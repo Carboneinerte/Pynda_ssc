@@ -4,21 +4,44 @@ from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
 import progressbar
 import geopandas as gpd
+from IPython.display import display
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from IPython.display import clear_output
 import matplotlib.patches as mpatches
-import scanpy as sc
 from pydeseq2.dds import DeseqDataSet
 from pydeseq2.ds import DeseqStats
 import random
+import scanpy as sc
+
+
 import warnings
+
 from anndata import ImplicitModificationWarning
-from module.misc import save_figure
 warnings.simplefilter('ignore', ImplicitModificationWarning)
+
+from module.misc import save_figure
 from module.config_local import dir_processed
+
+from pathlib import Path
+import anndata as ad
+import holoviews as hv
+import panel as pn
+import hvplot.pandas    # noqa
+import numpy as np
+import pooch
+
+import scanpy as sc
+
+import hv_anndata
+from hv_anndata import *
+
+hv_anndata.register()
+hv.extension("bokeh")
+pn.extension()
+pn.config.throttled = True
 
 def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
                          name_dir : str,
@@ -723,20 +746,29 @@ def deseq2_one_condition(adata:sc.AnnData,
                          ):
 
     list_celltypes = adata.obs[cluster_to_use].unique()
+    list_celltypes_sheet = list_celltypes
+
     ddf = []
     ddf_filter = []
+    list_ignored = []
 
     groups = adata.obs[group_col].unique()
 
     for idx, cell in enumerate(list_celltypes):  ### With replicates 
         print(cell, idx+1, "/", len(list_celltypes))
         adata_sub = adata[adata.obs[cluster_to_use]==cell]
-
+        if len(adata_sub.obs[group_col].unique()) == 1:
+            list_celltypes_sheet = np.delete(list_celltypes_sheet, np.where(list_celltypes_sheet == cell))
+            list_ignored.append(cell)
+            continue
+        
         pbs = [] 
         for sample in adata_sub.obs['sample'].unique():
             print(sample)
             samp_adata_sub = adata_sub[adata_sub.obs['sample']==sample]
             
+
+
             samp_adata_sub.X = samp_adata_sub.layers['counts']
 
             random.seed(20150201)
@@ -763,30 +795,106 @@ def deseq2_one_condition(adata:sc.AnnData,
                     quiet = True)
         sc.pp.filter_genes(dds, min_cells = 1)
         dds.deseq2()
-        stat_res = DeseqStats(dds,
-                              n_cpus = 32,
-                              contrast = (group_col,groups[1],groups[0]))
+        stat_res = DeseqStats(dds, n_cpus = 32, contrast = (group_col,groups[0],groups[1]))
 
         stat_res.summary() 
         de = stat_res.results_df
-        de_filter = de[(abs(de['log2FoldChange'])>filters_dict['logfoldchanges']) &
-                       (de['padj']<filters_dict['padj'])
-                      ]
-
+        
+        if filters_bool:
+            de_filter = de[(abs(de['log2FoldChange'])>filters_dict['logfoldchanges']) &
+                        (de['padj']<filters_dict['padj'])
+                        ]
+            ddf_filter.append(de_filter)
+        
         ddf.append(de)
-        ddf_filter.append(de_filter)
+        clear_output()
+        
 
     if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
         os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")
 
     writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter')
-    for j in range(len(list_celltypes)):
-        ddf[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
+    for j in range(len(list_celltypes_sheet)):
+        ddf[j].to_excel(writer, sheet_name=list_celltypes_sheet[j], index=True)
     writer.close()
 
-    writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
-    for j in range(len(list_celltypes)):
-        ddf_filter[j].to_excel(writer, sheet_name=list_celltypes[j], index=True)
-    writer.close()
+    if filters_bool:
+        writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
+        for j in range(len(list_celltypes_sheet)):
+            ddf_filter[j].to_excel(writer, sheet_name=list_celltypes_sheet[j], index=True)
+        writer.close()
+    
+    clear_output()
 
-    return ddf, ddf_filter
+    print('Analysis Done')
+    print(f'{len(ddf)} analyzed.')
+    print(f'{len(list_ignored)} ignored.')
+
+    return ddf, ddf_filter, list_celltypes_sheet
+
+def interactive_volcano_plot(result_list:list,
+                             deg_method:str,
+                             key,
+                             ctrl_grp:str,
+                             test_grp:str,
+                             pval_thshld:float = 0.05,
+                             FC_thshld:float = 0.26,
+                             ):
+    if deg_method == 'wilcoxon':
+        logstr = 'logfoldchanges'
+        pval_str = 'pvals'
+        adjpval_str = 'pvals_adj'
+        gene_name = 'names'
+
+        for idx in range(len(result_list)):
+            if ctrl_grp in result_list[idx]["group"].unique():
+                result_list[idx] = result_list[idx][result_list[idx]['group'] == test_grp]
+
+    elif deg_method == 'DeSeq2':
+        logstr = 'log2FoldChange'
+        pval_str = 'pvalue'
+        adjpval_str = 'padj'
+        gene_name = 'feature_name'
+    else:
+        print('Wrong method input. Either wilcoxon or DeSeq2.')
+        
+
+    # Prepare data for visualization
+    min_thr = result_list[key][result_list[key][adjpval_str] != 0][adjpval_str].min()
+    result_list[key]['neg_log10_p'] = -np.log10(result_list[key][pval_str] + min_thr)
+    result_list[key]['neg_log10_padj'] = -np.log10(result_list[key][adjpval_str]+ min_thr)
+
+    # Create significance categories based on both thresholds
+    significance_threshold = -np.log10(pval_thshld)
+    fold_change_threshold = FC_thshld
+
+    result_list[key]['significance'] = 'Not-Significant'
+    result_list[key].loc[
+        (result_list[key]['neg_log10_padj'] > significance_threshold) & 
+        (abs(result_list[key][logstr]) > fold_change_threshold), 
+        'significance'
+    ] = 'Significant'
+
+    volcano_plot = result_list[key].hvplot.scatter(
+        x=logstr, 
+        y="neg_log10_padj",
+        c='significance',
+        cmap={'Not-Significant': 'lightgrey', 'Significant': 'black'},
+        hover_cols=[gene_name, 'significance'],
+        title=f"DEG {ctrl_grp} vs {test_grp} ({deg_method}): {key}",
+        legend='bottom_right',
+        alpha=0.6,
+        size=20,
+        responsive=True,
+        height=500
+    )
+
+    # Add threshold lines
+    (
+        volcano_plot
+        * hv.HLine(significance_threshold).opts(color='red', line_dash='dashed', line_width=2)
+        * hv.VLine(-fold_change_threshold).opts(color='blue', line_dash='dashed', line_width=2) 
+        * hv.VLine(fold_change_threshold).opts(color='blue', line_dash='dashed', line_width=2)
+    )
+
+    return volcano_plot
