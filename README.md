@@ -1,9 +1,3 @@
----
-output: 
-  pdf_document: 
-    toc: yes
----
-
 ## To do list before starting the analysis:
 
 -   Clone or copy repository from Github (main branch) where you want to store it. It will be your "dir_main" folder.
@@ -18,14 +12,14 @@ git config user.email 'youremail'
 
     -   On Jetstream, avoid installing the env in /home/, prefer to install it in /media/volume/...
 
-    ``` python
-    conda create --prefix=/media/volume/.../yourEnvName python==3.11
+``` python
+conda create --prefix=/media/volume/.../yourEnvName python==3.11
 
-    conda activate yourEnvName
+conda activate yourEnvName
 
 pip install -r requirements.txt
 
-pip install leidenalg, xlsxwriter
+pip install leidenalg, xlsxwriter, geojson
 ```
 - Copy module/config.py and rename it as module/config_local.py
     - Define the folder containing raw files (**dir_raw**)

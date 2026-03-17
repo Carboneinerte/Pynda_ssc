@@ -9,6 +9,8 @@
 - Manual map
     - [ ] Cell list
     - [ ] Coordinates
+    - [ ] Spatial Leiden?
+    
 - DeSeq2
     - [X] One condition
     - [ ] Two conditions
