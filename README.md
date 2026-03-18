@@ -5,7 +5,7 @@
 
 ``` python
 git config user.name 'yourusername'
-git config user.email 'youremail'
+git config user.email rbiopandas2@gmail.com # or your own Github account
 ```
 
 -   Install Conda and create environment
