@@ -92,7 +92,7 @@ pip install leidenalg, xlsxwriter, geojson
 -   <https://scanpy.readthedocs.io/en/stable/>
 -   <https://squidpy.readthedocs.io/en/stable/>
 
-````{=html}
+
 <!--
 ## reload module
 
@@ -101,4 +101,4 @@ import importlib
 importlib.reload(xp)
 ```
 -->
-````
+
