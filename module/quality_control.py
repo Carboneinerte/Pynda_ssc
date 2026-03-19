@@ -157,10 +157,13 @@ def add_jitter(x, scale=0.5):
     return x + np.random.uniform(-scale, scale, size=len(x))
 
 def noise_threshold_ploting(sample:str,
-                            save_plot:bool = False):
+                            dir_raw:str = dir_raw,
+                            save_plot:bool = False
+                            ):
+    
     print('Start Sample :', sample)
 
-    df = pd.read_parquet(f'D:/Xenium/{sample}/transcripts.parquet',
+    df = pd.read_parquet(f'{dir_raw}/{sample}/transcripts.parquet',
                             filters=[("qv",">=",20)]
                             )       
 

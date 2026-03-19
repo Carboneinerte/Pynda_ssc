@@ -19,7 +19,7 @@ conda activate yourEnvName
 
 pip install -r requirements.txt
 
-pip install leidenalg, xlsxwriter, geojson
+pip install leidenalg, xlsxwriter, geojson, goatools
 ```
 - Copy module/config.py and rename it as module/config_local.py
     - Define the folder containing raw files (**dir_raw**)

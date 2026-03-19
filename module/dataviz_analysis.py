@@ -15,7 +15,10 @@ from pydeseq2.dds import DeseqDataSet
 from pydeseq2.ds import DeseqStats
 import random
 import scanpy as sc
+import matplotlib as mpl
 
+mpl.rcParams['svg.fonttype'] = 'none'  # 'none' = keep text as text objects
+mpl.rcParams['svg.hashsalt'] = ''  # consistent hashes for reproducibility
 
 import warnings
 
@@ -77,7 +80,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         axs = axs.flatten()
 
         def plot_umap(adata_to_plot, color_column, ax, title=None):
-            scatter = ax.scatter(adata_to_plot.obs['umap-3'], adata_to_plot.obs['umap-4'], c=adata_to_plot.obs[color_column], s=size, alpha=0.8)
+            scatter = ax.scatter(adata_to_plot.obs['umap-3'], adata_to_plot.obs['umap-4'], c=adata_to_plot.obs[color_column], s=size, alpha=0.8, rasterized=True)
             ax.set_title(title)
             ax.axis('off')
         samples_ids = adata_to_plot.obs['sample'].unique()
@@ -97,7 +100,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         
         if save_plot == True:
             suffix_save = f'UMAP_indi_{cluster_to_use}' 
-            save_figure(fig, suffix_save, name_dir, format='png')
+            save_figure(fig, suffix_save, name_dir, format='svg')
 
     ####
     else:
@@ -121,7 +124,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
             elif (cluster_to_use == 'leiden') or (cluster_to_use == 'kmeans'):
                 celltype_name = 'leiden'
             celltype_combine = str(celltype) + '_' + celltype_name
-            scat = ax.scatter(adata_sel.obs['umap-3'].values, adata_sel.obs['umap-4'].values, c=adata_sel.obs['leiden_colors'], s = 0.01, label = celltype_combine)
+            scat = ax.scatter(adata_sel.obs['umap-3'].values, adata_sel.obs['umap-4'].values, c=adata_sel.obs['leiden_colors'], s = 0.01, label = celltype_combine, rasterized=True)
         for cluster_id, centroid in cluster_centroids.iterrows():
             ax.text(centroid['umap-3'], centroid['umap-4'], str(cluster_id), color='black', fontsize=12, ha = 'center')
 
@@ -129,7 +132,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
         plt.show()
         if save_plot == True:
             suffix_save = f'UMAP_all_{cluster_to_use}' 
-            save_figure(fig, suffix_save, name_dir, format='png')
+            save_figure(fig, suffix_save, name_dir, format='svg')
 
 def cluster_plot(adata_to_plot,
                  name_dir,
@@ -227,7 +230,7 @@ def cluster_plot(adata_to_plot,
                     colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
                 else:
                     colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
-                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=size, marker = 'o', label=cluster_data[label_to_use].unique()[0])
+                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=size, marker = 'o', label=cluster_data[label_to_use].unique()[0], rasterized=True)
                 axs[idx].set_title(f"Sample {sample}")
                 axs[idx].xaxis.set_tick_params(labelbottom=False)
                 axs[idx].yaxis.set_tick_params(labelleft=False)
@@ -238,7 +241,7 @@ def cluster_plot(adata_to_plot,
         
         if save_plot == True:
             suffix_save = f'clusterplot_{cluster_to_use}' 
-            save_figure(fig, suffix_save, name_dir, format='png')
+            save_figure(fig, suffix_save, name_dir, format='svg')
 
 def polygonplot_dataprep(adata_main: sc.AnnData,
                          sample_to_plot : str,
@@ -429,7 +432,7 @@ def polygonplot_plot(df: pd.DataFrame,
             fig.delaxes(fig.axes[-1]) 
 
         cbar = fig.colorbar(
-            scatter.collections[1],  # Pass the ScalarMappable from the scatter plot
+            scatter.collections[0],  # Pass the ScalarMappable from the scatter plot
             ax=ax,
             orientation='horizontal',
             fraction=0.06,  # Fraction of original axes size (height adjustment)
@@ -472,6 +475,7 @@ def polygonplot_plot_gradient(
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
     
     if region_only != None:
+        viz = region_only
         cells_geo = cells_geo[cells_geo['region_automap_name']== region_only]
         xmin = cells_geo['x_coor'].min()
         xmax = cells_geo['x_coor'].max()
@@ -479,12 +483,14 @@ def polygonplot_plot_gradient(
         ymax = cells_geo['y_coor'].max()
 
     elif region_ != None:
+        viz = region_
         xmin = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].min()
         xmax = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].max()
         ymin = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].min()
         ymax = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].max()
         
     elif coord_ != None:
+        viz = coord_
         xmin, xmax, ymin, ymax = coord_
 
     else:
@@ -515,7 +521,7 @@ def polygonplot_plot_gradient(
         figsize=(20,20)
     )
 
-    cells_geo_crop.plot(ax=ax,
+    scatter = cells_geo_crop.plot(ax=ax,
                     column = cells_geo_crop[gene_], 
                     cmap = cmap_, vmin = 0.25,
                     alpha=1,
@@ -523,32 +529,32 @@ def polygonplot_plot_gradient(
                     # edgecolor =cells_geo_crop[gene_],
                    )
     ax.set_aspect('equal', adjustable='box')
-
+    ax.xaxis.set_tick_params(labelbottom=False)
+    ax.yaxis.set_tick_params(labelleft=False)
+    ax.set_title(f'{viz} : {gene_}')
 
     # if len(fig.axes) > 1:
     #     fig.delaxes(fig.axes[-1]) 
 
-    # cbar = fig.colorbar(
-    #     scatter.collections[1],  # Pass the ScalarMappable from the scatter plot
-    #     ax=ax,
-    #     orientation='horizontal',
-    #     fraction=0.06,  # Fraction of original axes size (height adjustment)
-    #     pad=0,         # Padding between plot and colorbar
-    # )
-    # cbar.ax.set_position([
-    #     ax.get_position().x0,                # Left coordinate matches the plot
-    #     ax.get_position().y0-0.04,        # Lower the colorbar below the plot
-    #     ax.get_position().width,            # Width matches the plot
-    #     0.04,                               # Height of the colorbar (adjust this value)
-    # ])
+    cbar = fig.colorbar(
+        scatter.collections[0],  # Pass the ScalarMappable from the scatter plot
+        ax=ax,
+        orientation='horizontal',
+        fraction=0.06,  # Fraction of original axes size (height adjustment)
+        pad=0,         # Padding between plot and colorbar
+    )
+    cbar.ax.set_position([
+        ax.get_position().x0,                # Left coordinate matches the plot
+        ax.get_position().y0-0.04,        # Lower the colorbar below the plot
+        ax.get_position().width,            # Width matches the plot
+        0.04,                               # Height of the colorbar (adjust this value)
+    ])
 
-    # cbar.set_label(gene_, size=20)
+    cbar.set_label(gene_, size=20)
 
-    # fig.colorbar()
-
-    ##### Add the custom legend
-    ax.legend(handles=legend_patches,     loc='center left', 
-        bbox_to_anchor=(1, 0.5), title='Cell Type')
+     ##### Add the custom legend
+    # ax.legend(handles=legend_patches,     loc='center left', 
+    #     bbox_to_anchor=(1, 0.5), title='Cell Type')
     
     if save_plot == True:
         suffix_save = f'plot_{region_}_{gene_}' 
@@ -637,7 +643,7 @@ def DEG_one_condition(adata: sc.AnnData,
             dfs_filter[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
         writer.close()
 
-    return dfs
+    return dfs, all_groups_type_sheet
 
 def DEG_two_conditions(adata: sc.AnnData,
                       name_dir: str,
@@ -648,7 +654,7 @@ def DEG_two_conditions(adata: sc.AnnData,
                       filters_bool: bool,
                       filters_dict: dict,
                       dir_processed: str = dir_processed,
-):
+                      ):
     dfs = []
     dfs_filter = []
     all_groups_C1 = np.array(adata.obs[cluster_to_use_1].unique())
@@ -833,6 +839,7 @@ def deseq2_one_condition(adata:sc.AnnData,
     return ddf, ddf_filter, list_celltypes_sheet
 
 def interactive_volcano_plot(result_list:list,
+                             list_cluster:list,
                              deg_method:str,
                              key,
                              ctrl_grp:str,
@@ -856,6 +863,8 @@ def interactive_volcano_plot(result_list:list,
         pval_str = 'pvals'
         adjpval_str = 'pvals_adj'
         gene_name = 'names'
+        key_str = key
+        key = np.where(list_cluster==key)[0][0]
 
         for idx in range(len(result_list)):
             if ctrl_grp in result_list[idx]["group"].unique():
@@ -866,6 +875,7 @@ def interactive_volcano_plot(result_list:list,
         pval_str = 'pvalue'
         adjpval_str = 'padj'
         gene_name = 'feature_name'
+        key_str = key
     else:
         print('Wrong method input. Either wilcoxon or DeSeq2.')
         
@@ -892,7 +902,7 @@ def interactive_volcano_plot(result_list:list,
         c='significance',
         cmap={'Not-Significant': 'lightgrey', 'Significant': 'black'},
         hover_cols=[gene_name, 'significance'],
-        title=f"DEG {ctrl_grp} vs {test_grp} ({deg_method}): {key}",
+        title=f"DEG {ctrl_grp} vs {test_grp} ({deg_method}): {key_str}",
         legend='bottom_right',
         alpha=0.6,
         size=20,
