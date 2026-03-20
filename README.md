@@ -29,6 +29,7 @@ pip install leidenalg, xlsxwriter, geojson, goatools
 - Define the name of each samples
     - Rename folders in "name_dir" accordingly
     - Add the names as a list in the function "sample_name_import" in module/config_local.py
+    - I would recommand to include an indication of the experimental group in the name of each samples (not required but can make things smoother downhill)
 ```{python}
 "name_dir" : ["sample1", "sample2", etc.],
 ```
