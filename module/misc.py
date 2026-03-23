@@ -383,13 +383,14 @@ def genes_list(type_:str):
                         "Wiz","Wls","Wnt1","Wnt10a","Wnt10b","Wnt11","Wnt16","Wnt2","Wnt2b","Wnt3","Wnt4","Wnt5a","Wnt5b","Wnt6","Wnt7a","Wnt7b","Wnt8b","Wnt9a","Wnt9b","Wrap53","Wrap73","Wrnip1","Wsb1","Wt1","Wtip","Wwox","Wwtr1","Xcl1","Xcr1","Xiap","Xkr6","Xpa","Xpo1","Xrcc1","Xrcc2","Xrcc4","Xrcc5","Xrcc6","Yap1","Yars",
                         "Ybx3","Yeats2","Yeats4","Yes1","Yif1a","Yipf1","Ywhae","Ywhag","Ywhaz","Yy1","Zap70","Zbp1","Zbtb16","Zbtb4","Zbtb46","Zbtb7a","Zbtb7b","Zbtb8b","Zc3h11a","Zc3h12a","Zc3h14","Zc3hc1","Zcchc12","Zdhhc18","Zdhhc2","Zdhhc6","Zdhhc7","Zdhhc8","Zeb1","Zeb2","Zfand2a","Zfand2b","Zfhx3","Zfp106","Zfp111",
                         "Zfp148","Zfp219","Zfp24","Zfp281","Zfp503","Zfp536","Zfp57","Zfp750","Zfp819","Zfp979","Zfpl1","Zfpm2","Zfyve9","Zic1","Zic2","Zic3","Zic4","Zkscan1","Zmpste24","Zmynd10","Zmynd19","Zp1","Zscan2","Zscan21","Zswim5","Zswim9","Zup1","Zyx","Zzef1","a"]
-
-
     }
     
     return dict_list[type_]
 
-def prot_name_annot():
+def prot_name_import():
+    '''
+    Import annotations from reference file
+    '''
     df_annotation = pd.read_csv(f'{dir_main}/reference_files/Mouse5K_metadata.csv')
     full_dict = dict(zip(df_annotation['gene_name'], df_annotation['protein_name']))
     ens_dict = dict(zip(df_annotation['gene_name'], df_annotation['gene_id']))
@@ -401,3 +402,30 @@ def prot_name_annot():
         'alt_dict' : alt_dict
     }
     return name_annot
+
+def prot_name_annot(ddf:list):
+    
+    name_annot = prot_name_import()
+
+    for key in range(len(ddf)):
+        if "CycID" in ddf[key].columns:
+            ddf[key]["protein_name"] = ddf[key]['CycID'].map(name_annot['full_dict'])
+            ddf[key]["alt_names"] = ddf[key]['CycID'].map(name_annot['alt_dict'])
+            ddf[key]["ensemblID"] = ddf[key]['CycID'].map(name_annot['ens_dict'])
+        elif "names" in ddf[key].columns:
+            ddf[key]["protein_name"] = ddf[key]['names'].map(name_annot['full_dict'])
+            ddf[key]["alt_names"] = ddf[key]['names'].map(name_annot['alt_dict'])
+            ddf[key]["ensemblID"] = ddf[key]['names'].map(name_annot['ens_dict'])
+        elif "gene" in ddf[key].columns:
+            ddf[key]["protein_name"] = ddf[key]['gene'].map(name_annot['full_dict'])
+            ddf[key]["alt_names"] = ddf[key]['gene'].map(name_annot['alt_dict'])
+            ddf[key]["ensemblID"] = ddf[key]['gene'].map(name_annot['ens_dict'])
+        elif "baseMean" in ddf[key].columns:
+            ddf[key]['feature_name'] = ddf[key].index
+            ddf[key]["protein_name"] = ddf[key]['feature_name'].map(name_annot['full_dict'])
+            ddf[key]["alt_names"] = ddf[key]['feature_name'].map(name_annot['alt_dict'])
+            ddf[key]["ensemblID"] = ddf[key]['feature_name'].map(name_annot['ens_dict'])
+        else:
+            print(key)
+    
+    return ddf

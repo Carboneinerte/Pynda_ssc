@@ -25,7 +25,7 @@ import warnings
 from anndata import ImplicitModificationWarning
 warnings.simplefilter('ignore', ImplicitModificationWarning)
 
-from module.misc import save_figure
+from module.misc import save_figure, prot_name_annot
 from module.config_local import dir_processed
 
 from pathlib import Path
@@ -48,7 +48,7 @@ pn.config.throttled = True
 
 def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
                          name_dir : str,
-                         dir_processed : str = dir_processed,
+                        #  dir_processed : str = dir_processed,
                          cluster_to_use : str = 'cell_type_newnum_final',
                          individual_plot : bool = True,
                          save_plot : bool = False,
@@ -57,6 +57,7 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
                         ):
     '''
     Plot UMAP with all samples combined or with individual samples.
+    Colors depend on "cluster_to_use" parameter
     '''
 
     adata_to_plot.obsm['umap'] = adata_to_plot.obsm['X_umap']
@@ -134,9 +135,9 @@ def umap_plot_indi_multi(adata_to_plot: sc.AnnData,
             suffix_save = f'UMAP_all_{cluster_to_use}' 
             save_figure(fig, suffix_save, name_dir, format='svg')
 
-def cluster_plot(adata_to_plot,
-                 name_dir,
-                 dir_processed: str = dir_processed,
+def cluster_plot(adata_to_plot:sc.AnnData,
+                 name_dir:str,
+                #  dir_processed: str = dir_processed,
                  cluster_to_use : str = 'cell_type_newnum_final',
                  cluster_to_map : list = ['all'],
                  cmap_ : str = 'tab20b',
@@ -145,25 +146,12 @@ def cluster_plot(adata_to_plot,
                  ):
     
     '''
-    Spatial plot of individual cells for each sample separately.
+    Spatial scatter plot of individual cells for each sample separately.
+    Colors depend on "cluster_to_use" parameter
 
     Cluster usable:
     'cell_type_newnum_auto_sub','cell_type_newnum_auto','cell_type_newnum_final',
     'cell_class_newnum','region_automap_num',"leiden","kmeans","circascore"
-
-    Docstring for cluster_plot
-    
-    :param adata_to_plot: Description
-    :param name_dir: Description
-    :param dir_processed: Description
-    :param cluster_to_use: Description
-    :type cluster_to_use: str
-    :param cluster_to_map: Description
-    :type cluster_to_map: list
-    :param cmap_: Description
-    :type cmap_: str
-    :param save_plot: Description
-    :type save_plot: bool
     '''
 
     label_to_use = cluster_to_use
@@ -251,20 +239,8 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
                          ):
     
     '''
-    Docstring for polygonplot_dataprep
-    
     Prepare data for polygon plot. Only ONE SAMPLE at the time.
-
-
-    :param adata_main: main AnnData object
-    :param sample_to_plot: Full name from 'sample' columns
-    :type sample_to_plot: str
-    :param dir_processed: Description
-    :type dir_processed: str
-    :param cluster_to_use: Description
-    :type cluster_to_use: str
-    :param cmap_: Will be used for the polygons colors
-    :type cmap_: str
+    Requires to have transformed cell coordinates into GeoJson with the corresponding Notebook
     '''
     
     ### Generate a color palette for the clusters - to make color stay consistent across samples
@@ -320,7 +296,7 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
 def polygonplot_plot(df: pd.DataFrame,
                      cells_geo:gpd.GeoDataFrame,
                      name_dir: str,            
-                     dir_processed: str = dir_processed,
+                    #  dir_processed: str = dir_processed,
                      cluster_to_use : str = 'cell_type_newnum_final',
                      gene_ : str = None,
                      region_ : str = None,
@@ -331,26 +307,14 @@ def polygonplot_plot(df: pd.DataFrame,
                      ):
     
     '''
-    Docstring for polygonplot_plot
-    
-    :param df: Description
-    :type df: Dataframe
-    :param cells_geo: Description
-    :type cells_geo: Dataframe
-    :param cluster_to_use: Description
-    :type cluster_to_use: str
-    :param gene_: Description
-    :type gene_: str
-    :param region_: Description
-    :type region_: str
-    :param region_only: Description
-    :type region_only: str
-    :param coord_: Description
-    :type coord_: list
-    :param save_plot: Description
-    :type save_plot: bool
-    :param legend: Description
-    :type legend: bool
+    Polygon plot of the sample selected with the "polygonplot_dataprep" function.
+
+    Field of view (FOV) can be defined 3 ways (priority in the same order):
+    - "region" : center the graph on the selected region from "region_automap_name". Show all celltypes and regions included. In case of large bilateral regions (like CTX), the plot can end up showing the whole section and not being very readable.
+    - "region_only" : center the graph on the selected region from "region_automap_name". Show ONLY the cells that are part of the region.
+    - "coord_" : a list of 4 coordinates [xmin, xmax, ymin, ymax] will define the FOV.
+
+    "gene_" is an optional parameter to add a visual indication of one gene (marker + color)
     '''
 
     if gene_ != None:
@@ -459,9 +423,10 @@ def polygonplot_plot(df: pd.DataFrame,
     plt.show()
 
 def polygonplot_plot_gradient(
-        df, cells_geo,
+        df: pd.DataFrame,
+        cells_geo: gpd.GeoDataFrame,
         name_dir: str,
-        dir_processed: str = dir_processed,
+        # dir_processed: str = dir_processed,
         gene_: str = None,
         region_: str = None,
         region_only: str = None,
@@ -469,6 +434,17 @@ def polygonplot_plot_gradient(
         cmap_:str = 'inferno',
         save_plot: bool = False
         ):
+
+    '''
+    Polygon plot of the sample selected with the "polygonplot_dataprep" function.
+
+    Field of view (FOV) can be defined 3 ways (priority in the same order):
+    - "region" : center the graph on the selected region from "region_automap_name". Show all celltypes and regions included. In case of large bilateral regions (like CTX), the plot can end up showing the whole section and not being very readable.
+    - "region_only" : center the graph on the selected region from "region_automap_name". Show ONLY the cells that are part of the region.
+    - "coord_" : a list of 4 coordinates [xmin, xmax, ymin, ymax] will define the FOV.
+
+    "gene_" is an optional parameter to add a visual indication of one gene (gradient coloring of the cells polygons)
+    '''
     
     if gene_ != None:
         df_dict = dict(zip(df.index, df[gene_]))
@@ -569,7 +545,14 @@ def DEG_one_condition(adata: sc.AnnData,
                       grp_ctrl: str,
                       filters_bool: bool,
                       filters_dict: dict,
-                      dir_processed: str = dir_processed,):
+                      dir_processed: str = dir_processed,
+                      ):
+    
+    '''
+    Rank Gene test using wilcoxon method to estimate DEG between groups.
+    Support one condition (e.g. cell type, region, neurotransmistter, etc.) and one grouping (e.g. Genotype, Sex, etc.)
+    Accept dictionnary as list of filters. Will save both unfiltered and filtered result.
+    '''
 
     dfs = []
     dfs_filter = []
@@ -585,8 +568,8 @@ def DEG_one_condition(adata: sc.AnnData,
         adata_microglia = adata[adata.obs[cluster_to_use] == cell_type_to_extract]
         sc.pp.calculate_qc_metrics(adata_microglia, percent_top=[20, 50], inplace=True)
         print(f"Start analysis of {cell_type_to_extract}")
+
         ### Extract gene expression per cluster + log fold change + p-value
-        
         clust_uniq = adata.obs[group_col].unique()
         dat = pd.DataFrame()
 
@@ -596,9 +579,7 @@ def DEG_one_condition(adata: sc.AnnData,
             continue
 
         adata_microglia.obs[group_col] = adata_microglia.obs[group_col].astype(str)
-        #sc.tl.dendrogram(adata, groupby = 'L04_newnum_subclassname')
         sc.tl.rank_genes_groups(adata_microglia, groupby=group_col, method="wilcoxon", tie_correct = True, pts = True,
-                                #  layer = 'log1p_norm'
                                 )
                 
         for i in adata.obs[group_col].unique():
@@ -609,7 +590,7 @@ def DEG_one_condition(adata: sc.AnnData,
 
         if filters_bool:
             dat_filter = dat[ ### Choose filters here
-            # (dat['pct_nz_group'] > filters_dic['percentage_pop']) & #Percentage of cell expressing the gene
+            (dat['pct_nz_group'] > filters_dict['percentage_pop']) & #Percentage of cell expressing the gene
             (dat['pvals_adj']<= filters_dict['pval_adj']) & # adjusted p-value
             (abs(dat['logfoldchanges']) > filters_dict['logfoldchanges']) & # logfoldchange
             (dat['mean_count'] >= filters_dict['mean_count']) &
@@ -627,6 +608,8 @@ def DEG_one_condition(adata: sc.AnnData,
         print('Extraction done')
 
     bar.finish()
+
+    dfs = prot_name_annot(dfs)
 
     if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}"):
         os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use}")
@@ -655,6 +638,14 @@ def DEG_two_conditions(adata: sc.AnnData,
                       filters_dict: dict,
                       dir_processed: str = dir_processed,
                       ):
+    '''
+    Rank Gene test using wilcoxon method to estimate DEG between groups.
+    Support two conditions (e.g. cell type, region, neurotransmistter, etc.). Cluster_to_use_1 must be the larger one (e.g. region with celltype as cluster_to_use_2)
+
+    ... and one grouping (e.g. Genotype, Sex, etc.)
+    Accept dictionnary as list of filters. Will save both unfiltered and filtered result.
+    '''
+    
     dfs = []
     dfs_filter = []
     all_groups_C1 = np.array(adata.obs[cluster_to_use_1].unique())
@@ -718,7 +709,9 @@ def DEG_two_conditions(adata: sc.AnnData,
 
             dfs.append(dat)
             clear_output()
-            
+        
+        dfs = prot_name_annot(dfs)
+
         if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}"):
             os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges/{cluster_to_use_2}_in_{cluster_to_use_1}")
 
@@ -814,7 +807,8 @@ def deseq2_one_condition(adata:sc.AnnData,
         
         ddf.append(de)
         clear_output()
-        
+
+    ddf = prot_name_annot(ddf) 
 
     if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
         os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")

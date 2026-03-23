@@ -10,10 +10,14 @@
     - [ ] Cell list
     - [ ] Coordinates
     - [ ] Spatial Leiden?
-    
-- DeSeq2
-    - [X] One condition
-    - [ ] Two conditions
+
+- DEG analysis
+    - DeSeq2
+        - [X] One condition
+        - [ ] Two conditions
+    - Implement Limma (https://github.com/shivaprasad-patil/LIMMA-Python-implementation)
+
+- Gene Set Enrichment Analysis
 
 # Metacycle and CircaComapre
 - [ ] Add step to check if "ZT" column exist in data
