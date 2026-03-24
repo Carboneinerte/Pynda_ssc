@@ -626,7 +626,7 @@ def DEG_one_condition(adata: sc.AnnData,
             dfs_filter[j].to_excel(writer, sheet_name=all_groups_type_sheet[j], index=False)
         writer.close()
 
-    return dfs, all_groups_type_sheet
+    return dfs, dfs_filter, all_groups_type_sheet
 
 def DEG_two_conditions(adata: sc.AnnData,
                       name_dir: str,
