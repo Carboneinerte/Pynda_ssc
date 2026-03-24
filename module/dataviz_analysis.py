@@ -28,12 +28,10 @@ warnings.simplefilter('ignore', ImplicitModificationWarning)
 from module.misc import save_figure, prot_name_annot
 from module.config_local import dir_processed
 
-from pathlib import Path
-import anndata as ad
+
 import holoviews as hv
 import panel as pn
 import hvplot.pandas    # noqa
-import numpy as np
 import pooch
 
 import scanpy as sc

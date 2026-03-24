@@ -7,6 +7,8 @@ import time
 import anndata as ad
 import scanpy as sc
 import os
+from module.config_local import dir_raw
+
 
 save_path = "/media/volume/volume_spatial/hugo/notebook/h5ad/AD_unassigned/"
 
@@ -59,7 +61,8 @@ def clipped_bin_areas(
     gdf,
     name_col="names",
     bin_size=BIN,
-):
+    ):
+
     rows = []
 
     for _, r in gdf.iterrows():
@@ -103,10 +106,10 @@ for pfile in pfilelist:
     print(pfile, expe)
     sti = time.time()
     if expe == 'C0':
-        parquet_in = f'/media/volume/volume_spatial/hugo/data/{pfile}/transcripts_light.parquet'
+        parquet_in = f'{dir_raw}/{pfile}/transcripts_light.parquet'
     else:
-        parquet_in = f'/media/volume/volume_spatial/hugo/data/{pfile}/transcripts_light.parquet'#"/media/volume/volume_spatial/hugo/data/circa4-IGM-ZT01/splitregion/CTX_transcripts_circa4-IGM-ZT01.parquet"
-    #parquet_out = "coords_binned-test.parquet"
+        parquet_in = f'{dir_raw}/{pfile}/transcripts_light.parquet'
+    
     out_path = "data/density-bins-5k/"+pfile+"-densitybins.parquet"
     print(pfile,'bin size = ',BIN)
     #this takes the parquet file and saves a new parquet file with bin columns. you could rename the out file if you want to save it in place
@@ -228,17 +231,17 @@ for pfile in pfilelist:
 
 adata = adatas[0].concatenate(adatas[1:], index_unique=None)
 
-sc.pp.calculate_qc_metrics(adata,  percent_top=(10, 20, 50, 150), inplace=True)
+# sc.pp.calculate_qc_metrics(adata,  percent_top=(10, 20, 50, 150), inplace=True)
 
-adata.layers["counts"] = adata.X.copy()
-sc.pp.normalize_total(adata, target_sum=10e4, inplace=True)
-sc.pp.log1p(adata)
-sc.pp.pca(adata, n_comps = 50)
+# adata.layers["counts"] = adata.X.copy()
+# sc.pp.normalize_total(adata, target_sum=10e4, inplace=True)
+# sc.pp.log1p(adata)
+# sc.pp.pca(adata, n_comps = 50)
 
-sc.pp.neighbors(adata)
-sc.tl.umap(adata, min_dist = 1)
+# sc.pp.neighbors(adata)
+# sc.tl.umap(adata, min_dist = 1)
 
-sc.tl.leiden(adata, resolution = 1)
+# sc.tl.leiden(adata, resolution = 1)
 
 if not os.path.exists(save_path):
    os.makedirs(save_path)
