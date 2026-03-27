@@ -26,7 +26,7 @@ from anndata import ImplicitModificationWarning
 warnings.simplefilter('ignore', ImplicitModificationWarning)
 
 from module.misc import save_figure, prot_name_annot
-from module.config_local import dir_processed
+from module.config_local import dir_processed, dir_raw
 
 
 import holoviews as hv
@@ -416,9 +416,119 @@ def polygonplot_plot(df: pd.DataFrame,
 
     if save_plot == True:
         suffix_save = f'plot_{region_}_{gene_}' 
-        save_figure(fig, suffix_save, name_dir, format='png')
+        save_figure(fig, suffix_save, name_dir, format='svg')
 
     plt.show()
+    return fig, ax
+
+def polygonplot_plot_interactive(df: pd.DataFrame,
+                     cells_geo:gpd.GeoDataFrame,
+                     name_dir: str,
+                     dir_raw:str = dir_raw,            
+                    #  dir_processed: str = dir_processed,
+                     cluster_to_use : str = 'cell_type_newnum_final',
+                     region_ : str = None,
+                     region_only : str = None,
+                     coord_ : list = None,
+                     gene_transcript:str = None,
+                     sample: str = None,
+                     unassigned: bool = True,
+                     size_trans: float = 8,
+                     legend_cells : bool = False
+                     ):
+    
+    if region_only != None:
+        cells_geo = cells_geo[cells_geo['region_automap_name']== region_only]
+        xmin = cells_geo['x_coor'].min()
+        xmax = cells_geo['x_coor'].max()
+        ymin = cells_geo['y_coor'].min()
+        ymax = cells_geo['y_coor'].max()
+
+    elif region_ != None:
+        xmin = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].min()
+        xmax = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].max()
+        ymin = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].min()
+        ymax = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].max()
+        
+    elif coord_ != None:
+        xmin, xmax, ymin, ymax = coord_
+
+    else:
+        print(region_)
+        xmin = cells_geo['x_coor'].min()
+        xmax = cells_geo['x_coor'].max()
+        ymin = cells_geo['y_coor'].min()
+        ymax = cells_geo['y_coor'].max()
+
+    cells_geo_crop = cells_geo[(cells_geo['x_coor'] >= xmin) & (cells_geo['x_coor'] <= xmax)  
+                            & (cells_geo['y_coor'] >= ymin) & (cells_geo['y_coor'] <= ymax)]
+
+    all_cell_type = cells_geo_crop[cluster_to_use].unique()
+    list_cell_nb = range(0, len(all_cell_type))
+    mapping_dict = dict(zip(all_cell_type,list_cell_nb))
+    cells_geo_crop['cell_type_new'] = cells_geo_crop[cluster_to_use].map(mapping_dict)
+
+    # ##### Extract unique pairs of 'cell type' and 'leiden_colors'
+    # unique_cell_types = cells_geo_crop[[cluster_to_use, 'leiden_colors']].drop_duplicates()
+
+    # # ##### Extract unique pairs of 'cell type' and 'leiden_colors'
+    # unique_cell_types = cells_geo_crop[[cluster_to_use, 'leiden_colors']].drop_duplicates()
+
+    # ##### Create a color map for the legend
+    # legend_patches = [
+    #     mpatches.Patch(color=row['leiden_colors'], label=row[cluster_to_use]) 
+    #     for _, row in unique_cell_types.iterrows()
+    # ]
+
+    # fig, ax = plt.subplots(
+    #     figsize=(20,20)
+    # # )
+    # cells_geo_crop.plot(ax=ax,
+    #                     color = cells_geo_crop['leiden_colors'],
+    #                     alpha=1,
+    #                     aspect=1,
+    #                     zorder=1,
+    #                     edgecolor = "black", #cells_geo_crop['leiden_colors'],
+    #                     linewidth= 1,
+    #                 )
+    # ax.set_aspect('equal', adjustable='box')
+
+    # cells_geo_crop.hvplot.polygons(color='cell type', geo = True)
+
+    polys = []
+    cells = []
+    for cell in cells_geo_crop.index:
+        polys.append(cells_geo_crop['geometry'][cell])
+        cells.append(cells_geo_crop['cell type'][cell])
+
+    gdf = gpd.GeoDataFrame({'geometry': polys,
+                            'cell_type' : cells})
+
+    cells_graph = gdf.hvplot.polygons(color='cell_type', data_aspect=1,
+                                frame_width=1000,legend=legend_cells,hover_cols = ["cell_id"])
+    
+    if (gene_transcript != None) & (sample != None):
+        df_trans = pd.read_parquet(f'{dir_raw}/{sample_to_plot}/transcripts_light.parquet', filters = [("feature_name", "=", "Gfap"),
+                                                                                        ('x_location',">=",xmin),
+                                                                                        ('x_location',"<=",xmax),
+                                                                                        ('y_location',">=",ymin),
+                                                                                        ('y_location',"<=",ymax),
+                                                                                        ]
+                                                                                        )
+        df_trans['cell_id']=df_trans['cell_id'].apply(lambda x: 'ASSIGNED' if x!="UNASSIGNED" else "UNASSIGNED")
+
+
+
+        transcripts = df_trans.hvplot.scatter(x="x_location",y="y_location",data_aspect=1, color = "cell_id",
+                                            cmap={'ASSIGNED': 'black', 'UNASSIGNED': 'red'},
+                                            hover_cols = ['feature_name',"cell_id"],legend=False,
+                                            s=5)
+
+        combined = cells_graph * transcripts
+    else:
+        combined = cell_graph
+
+    combined
 
 def polygonplot_plot_gradient(
         df: pd.DataFrame,
@@ -535,6 +645,117 @@ def polygonplot_plot_gradient(
         save_figure(fig, suffix_save, name_dir, format='png')
 
     plt.show()
+
+def polygonplot_plot_transcripts(df: pd.DataFrame,
+                     cells_geo:gpd.GeoDataFrame,
+                     name_dir: str,
+                     dir_raw:str = dir_raw,            
+                    #  dir_processed: str = dir_processed,
+                     cluster_to_use : str = 'cell_type_newnum_final',
+                     region_ : str = None,
+                     region_only : str = None,
+                     coord_ : list = None,
+                     gene_transcript:str = None,
+                     sample: str = None,
+                     unassigned: bool = True,
+                     size_trans: float = 8,
+                     save_plot : bool = False,
+                     legend : bool = False
+                     ):
+    
+    '''
+    Polygon plot of the sample selected with the "polygonplot_dataprep" function.
+
+    Field of view (FOV) can be defined 3 ways (priority in the same order):
+    - "region" : center the graph on the selected region from "region_automap_name". Show all celltypes and regions included. In case of large bilateral regions (like CTX), the plot can end up showing the whole section and not being very readable.
+    - "region_only" : center the graph on the selected region from "region_automap_name". Show ONLY the cells that are part of the region.
+    - "coord_" : a list of 4 coordinates [xmin, xmax, ymin, ymax] will define the FOV.
+
+    '''
+
+    if region_only != None:
+        cells_geo = cells_geo[cells_geo['region_automap_name']== region_only]
+        xmin = cells_geo['x_coor'].min()
+        xmax = cells_geo['x_coor'].max()
+        ymin = cells_geo['y_coor'].min()
+        ymax = cells_geo['y_coor'].max()
+
+    elif region_ != None:
+        xmin = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].min()
+        xmax = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].max()
+        ymin = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].min()
+        ymax = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].max()
+        
+    elif coord_ != None:
+        xmin, xmax, ymin, ymax = coord_
+
+    else:
+        print(region_)
+        xmin = cells_geo['x_coor'].min()
+        xmax = cells_geo['x_coor'].max()
+        ymin = cells_geo['y_coor'].min()
+        ymax = cells_geo['y_coor'].max()
+
+    cells_geo_crop = cells_geo[(cells_geo['x_coor'] >= xmin) & (cells_geo['x_coor'] <= xmax)  
+                            & (cells_geo['y_coor'] >= ymin) & (cells_geo['y_coor'] <= ymax)]
+
+    all_cell_type = cells_geo_crop[cluster_to_use].unique()
+    list_cell_nb = range(0, len(all_cell_type))
+    mapping_dict = dict(zip(all_cell_type,list_cell_nb))
+    cells_geo_crop['cell_type_new'] = cells_geo_crop[cluster_to_use].map(mapping_dict)
+
+    # ##### Extract unique pairs of 'cell type' and 'leiden_colors'
+    unique_cell_types = cells_geo_crop[[cluster_to_use, 'leiden_colors']].drop_duplicates()
+
+    ##### Create a color map for the legend
+    legend_patches = [
+        mpatches.Patch(color=row['leiden_colors'], label=row[cluster_to_use]) 
+        for _, row in unique_cell_types.iterrows()
+    ]
+
+    fig, ax = plt.subplots(
+        figsize=(20,20)
+    )
+    cells_geo_crop.plot(ax=ax,
+                        color = cells_geo_crop['leiden_colors'],
+                        alpha=1,
+                        aspect=1,
+                        zorder=1,
+                        edgecolor = "black", #cells_geo_crop['leiden_colors'],
+                        linewidth= 1,
+                    )
+    ax.set_aspect('equal', adjustable='box')
+
+
+    if (gene_transcript != None) & (sample != None):
+        df_trans = pd.read_parquet(f'{dir_raw}/{sample}/transcripts_light.parquet', filters = [("feature_name", "=", gene_transcript),
+                                                                                        ('x_location',">=",xmin),
+                                                                                        ('x_location',"<=",xmax),
+                                                                                        ('y_location',">=",ymin),
+                                                                                        ('y_location',"<=",ymax),
+                                                                                        ])
+        df_trans['cell_id']=df_trans['cell_id'].apply(lambda x: 'ASSIGNED' if x!="UNASSIGNED" else "UNASSIGNED")
+        print(xmin)
+
+        if unassigned:
+            ax.scatter(x=df_trans[df_trans['cell_id']=="ASSIGNED"]['x_location'], y=df_trans[df_trans['cell_id']=="ASSIGNED"]['y_location'], s=size_trans, color ="black")
+            ax.scatter(x=df_trans[df_trans['cell_id']=="UNASSIGNED"]['x_location'], y=df_trans[df_trans['cell_id']=="UNASSIGNED"]['y_location'], s=size_trans, color ="red")
+        else:
+            ax.scatter(x=df_trans['x_location'], y=df_trans['y_location'], s=size_trans, color ="black")
+    else:
+        print("Gene name or sample info missing")
+
+    ##### Add the custom legend
+    if legend:    
+        ax.legend(handles=legend_patches,     loc='center left', 
+            bbox_to_anchor=(1, 0.5), title='Cell Type')
+
+    if save_plot == True:
+        suffix_save = f'plot_{region_}_{gene_transcript}_{sample}' 
+        save_figure(fig, suffix_save, name_dir, format='svg')
+
+    plt.show()
+    return fig, ax
 
 def DEG_one_condition(adata: sc.AnnData,
                       name_dir: str,
@@ -892,7 +1113,7 @@ def interactive_volcano_plot(result_list:list,
         x=logstr, 
         y="neg_log10_padj",
         c='significance',
-        cmap={'Not-Significant': 'lightgrey', 'Significant': 'black'},
+        cmap={'Not-Significant': 'lightgrey', 'Significant': 'red'},
         hover_cols=[gene_name, 'significance'],
         title=f"DEG {ctrl_grp} vs {test_grp} ({deg_method}): {key_str}",
         legend='bottom_right',

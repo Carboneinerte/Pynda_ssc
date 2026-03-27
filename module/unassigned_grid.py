@@ -7,6 +7,7 @@ import time
 import anndata as ad
 import scanpy as sc
 import os
+from IPython.display import clear_output
 from module.config_local import dir_raw,dir_processed
 from module.export import coordinates_to_Geojson
 
@@ -77,7 +78,7 @@ def clipped_bin_areas(
     
     return pd.concat(rows, ignore_index=True)
 
-def unassigned_density(samples_ids, name_dir):
+def unassigned_density(samples_ids: list, name_dir:str):
     BIN = 50   # your x (same for width/height)
     x0 = 0.0          # grid origin; set to 0 or use min below
     y0 = 0.0
@@ -89,7 +90,7 @@ def unassigned_density(samples_ids, name_dir):
         sti = time.time()
         parquet_in = f'{dir_raw}/{pfile}/transcripts_light.parquet'
         
-        out_path = "data/density-bins-5k/"+pfile+"-densitybins.parquet"
+        # out_path = "data/density-bins-5k/"+pfile+"-densitybins.parquet"
         print(pfile,'bin size = ',BIN)
         #this takes the parquet file and saves a new parquet file with bin columns. you could rename the out file if you want to save it in place
         df = (
@@ -214,14 +215,14 @@ def unassigned_density(samples_ids, name_dir):
         sto = time.time()
         ct = round(sto-sti,6)
         print(ct,'seconds')
+        clear_output()
 
     adata = adatas[0].concatenate(adatas[1:], index_unique=None)
-
-    try:
-        adata.write_h5ad(f'{save_path}/{name_dir}_unassigned_adata.h5ad')
-    except:
-        os.makedirs(save_path)
-        adata.write_h5ad(f'{save_path}/{name_dir}_unassigned_adata.h5ad')
-
-
     print('Analysis Done')
+
+    return adata
+    # try:
+    #     adata.write_h5ad(f'{save_path}/{name_dir}_unassigned_adata.h5ad')
+    # except:
+    #     os.makedirs(save_path)
+    #     adata.write_h5ad(f'{save_path}/{name_dir}_unassigned_adata.h5ad')

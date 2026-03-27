@@ -73,7 +73,8 @@ pip install leidenalg, xlsxwriter, geojson, goatools, polars
 -   cells.csv.gz
 -   metrics_summary.csv
 -   transcripts.parquet
--   {sample_name}\_ROI_cells_stats.csv (optional)
+-   {sample_name}\_whole_section_annotation.csv (optional, contain the coordinates of the ROI)
+-   {sample_name}\_ROI_cells_stats.csv (optional, contain the list of cells in the ROI)
 
 ## Misc. info
 
