@@ -289,11 +289,12 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
     df['sample'] = df['cell_id'].map(mapping_dict_manos)
     df.dropna(subset=['cell_type_final'], inplace=True)
 
-    return df, cells_geo, cluster_to_use
+    return df, cells_geo
 
 def polygonplot_plot(df: pd.DataFrame,
                      cells_geo:gpd.GeoDataFrame,
-                     name_dir: str,            
+                     name_dir: str,
+                     sample: str,         
                     #  dir_processed: str = dir_processed,
                      cluster_to_use : str = 'cell_type_newnum_final',
                      gene_ : str = None,
@@ -414,6 +415,8 @@ def polygonplot_plot(df: pd.DataFrame,
         ax.legend(handles=legend_patches,     loc='center left', 
             bbox_to_anchor=(1, 0.5), title='Cell Type')
 
+    ax.title(f'{sample}')
+
     if save_plot == True:
         suffix_save = f'plot_{region_}_{gene_}' 
         save_figure(fig, suffix_save, name_dir, format='svg')
@@ -508,7 +511,7 @@ def polygonplot_plot_interactive(df: pd.DataFrame,
                                 frame_width=1000,legend=legend_cells,hover_cols = ["cell_id"])
     
     if (gene_transcript != None) & (sample != None):
-        df_trans = pd.read_parquet(f'{dir_raw}/{sample_to_plot}/transcripts_light.parquet', filters = [("feature_name", "=", "Gfap"),
+        df_trans = pd.read_parquet(f'{dir_raw}/{sample}/transcripts_light.parquet', filters = [("feature_name", "=", "Gfap"),
                                                                                         ('x_location',">=",xmin),
                                                                                         ('x_location',"<=",xmax),
                                                                                         ('y_location',">=",ymin),
@@ -526,14 +529,15 @@ def polygonplot_plot_interactive(df: pd.DataFrame,
 
         combined = cells_graph * transcripts
     else:
-        combined = cell_graph
+        combined = cells_graph
 
-    combined
+    return combined
 
 def polygonplot_plot_gradient(
         df: pd.DataFrame,
         cells_geo: gpd.GeoDataFrame,
         name_dir: str,
+        sample:str,
         # dir_processed: str = dir_processed,
         gene_: str = None,
         region_: str = None,
@@ -635,7 +639,7 @@ def polygonplot_plot_gradient(
     ])
 
     cbar.set_label(gene_, size=20)
-
+    ax.title(f'{sample}')
      ##### Add the custom legend
     # ax.legend(handles=legend_patches,     loc='center left', 
     #     bbox_to_anchor=(1, 0.5), title='Cell Type')
@@ -753,7 +757,7 @@ def polygonplot_plot_transcripts(df: pd.DataFrame,
     if save_plot == True:
         suffix_save = f'plot_{region_}_{gene_transcript}_{sample}' 
         save_figure(fig, suffix_save, name_dir, format='svg')
-
+    ax.title(f'{sample}')
     plt.show()
     return fig, ax
 
