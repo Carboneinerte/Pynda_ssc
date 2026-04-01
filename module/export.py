@@ -12,6 +12,9 @@ def export_XE(df:pd.DataFrame,
               group:str,
               name_dir:str
               ):
+    '''
+    Export selected group as csv to import into Xenium Explorer "Cell Grouping"
+    '''
     
     df_temp = df[df['sample']==sample]
     df_temp['cell_id'] = df_temp.index
@@ -28,10 +31,14 @@ def export_XE(df:pd.DataFrame,
 
 def coordinates_to_Geojson(sample:str,
                            dir_raw:str = dir_raw,
-                           dir_processed:str = dir_processed):
+                           dir_processed:str = dir_processed
+                           ):
     
+    '''
+    Transform list of coordinates from .csv files, typically from Xenium Explorer, into a GeoPandas compatible with our workflow.
+    '''
 
-    BR_df = pd.read_csv(f"{dir_raw}/{sample}/{sample}_whole_section_annotation.csv", comment = "#")
+    BR_df = pd.read_csv(f"{dir_raw}/{sample}/{sample}_ROI_annotation.csv", comment = "#")
 
     # Group the dataframe by the "Selection" column
     grouped = BR_df.groupby('Selection')
@@ -57,11 +64,11 @@ def coordinates_to_Geojson(sample:str,
 
     # Save the GeoJSON FeatureCollection to a file
     try:
-        with open(f'{dir_processed}/coordinates/whole_section/{sample}_whole_section_annotation.geojson', 'w') as f:
+        with open(f'{dir_processed}/coordinates/ROI/{sample}_ROI_annotation.geojson', 'w') as f:
             geojson.dump(feature_collection, f)
     except:
-        os.makedirs(f'{dir_processed}/coordinates/whole_section/')
-        with open(f'{dir_processed}/coordinates/whole_section/{sample}_whole_section_annotation.geojson', 'w') as f:
+        os.makedirs(f'{dir_processed}/coordinates/ROI/')
+        with open(f'{dir_processed}/coordinates/ROI/{sample}_ROI_annotation.geojson', 'w') as f:
             geojson.dump(feature_collection, f)
 
     print("GeoJSON saved")
