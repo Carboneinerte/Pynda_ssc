@@ -12,7 +12,11 @@ from module.config_local import dir_raw,dir_processed
 from module.export import coordinates_to_Geojson
 
 
-def bins_for_geom(geom, bin_size, x0=0.0, y0=0.0):
+def bins_for_geom(geom,
+                  bin_size: int,
+                  x0: float = 0.0,
+                  y0: float = 0.0
+                  ):
         minx, miny, maxx, maxy = geom.bounds
 
         gx0 = int(np.floor((minx - x0) / bin_size) * bin_size + x0)
@@ -34,9 +38,9 @@ def bins_for_geom(geom, bin_size, x0=0.0, y0=0.0):
         return keys, bx, by, cells
 
 def clipped_bin_areas(
-    gdf,
-    name_col="names",
-    bin_size=50,
+    gdf: gpd.GeoDataFrame,
+    name_col: str ="names",
+    bin_size:int = 50,
     ):
 
     rows = []
@@ -78,8 +82,16 @@ def clipped_bin_areas(
     
     return pd.concat(rows, ignore_index=True)
 
-def unassigned_density(samples_ids: list, name_dir:str):
-    BIN = 50   # your x (same for width/height)
+def unassigned_density(samples_ids: list,
+                       name_dir:str,
+                       BIN: int = 50
+                       ):
+    
+    '''
+    Extract the unassigned transcripts and combine them into BIN x BIN um "pseudocells" and saved as AnnotatedDataFrame (AnnData).
+    '''
+
+    # BIN = 50   # your x (same for width/height)
     x0 = 0.0          # grid origin; set to 0 or use min below
     y0 = 0.0
     adatas = []
@@ -112,10 +124,10 @@ def unassigned_density(samples_ids: list, name_dir:str):
 
         #load in shapes. will have to loop through these too
         try:
-            dfg_r = gpd.read_file(f"{dir_processed}/coordinates/whole_section/{pfile}_whole_section_annotation.geojson")
+            dfg_r = gpd.read_file(f"{dir_processed}/coordinates/ROI/{pfile}_ROI_annotation.geojson")
         except:
             coordinates_to_Geojson(pfile,dir_raw)
-            dfg_r = gpd.read_file(f"{dir_processed}/coordinates/whole_section/{pfile}_whole_section_annotation.geojson")
+            dfg_r = gpd.read_file(f"{dir_processed}/coordinates/ROI/{pfile}_ROI_annotation.geojson")
         # this gets rid of the warnings Only do this if the CRS is currently geographic
         print(dfg_r.head())
         if dfg_r.crs is None or dfg_r.crs.is_geographic:
