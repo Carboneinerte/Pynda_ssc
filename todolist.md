@@ -1,3 +1,7 @@
+# README
+
+- [ ] Fix links
+
 # Spatial Analysis
 - [X] Cell neighbors
 - [ ] Cell to cell communication (L-R) : ongoing (AG)
@@ -5,6 +9,8 @@
     - [ ] CellChat tested, promising, allow condition comparisons
 
 - [X] Update to python 3.11 to use holoviz
+
+- [ ] export requirements.txt
 
 - Manual map
     - [ ] Cell list
