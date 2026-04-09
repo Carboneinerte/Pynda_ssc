@@ -315,12 +315,15 @@ def polygonplot_plot(df: pd.DataFrame,
 
     "gene_" is an optional parameter to add a visual indication of one gene (marker + color)
     '''
+    suffix_save = ""
 
     if gene_ != None:
+        suffix_save = suffix_save + "_" + gene_
         df_dict = dict(zip(df.index, df[gene_]))
         cells_geo[gene_] = cells_geo['cell'].map(df_dict)
     
     if region_only != None:
+        suffix_save = suffix_save + "_" + region_only
         cells_geo = cells_geo[cells_geo['region_automap_name']== region_only]
         xmin = cells_geo['x_coor'].min()
         xmax = cells_geo['x_coor'].max()
@@ -328,12 +331,14 @@ def polygonplot_plot(df: pd.DataFrame,
         ymax = cells_geo['y_coor'].max()
 
     elif region_ != None:
+        suffix_save = suffix_save + "_" + region_
         xmin = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].min()
         xmax = cells_geo[cells_geo['region_automap_name']== region_]['x_coor'].max()
         ymin = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].min()
         ymax = cells_geo[cells_geo['region_automap_name']== region_]['y_coor'].max()
         
     elif coord_ != None:
+        suffix_save = suffix_save + "_" + str(coord_)
         xmin, xmax, ymin, ymax = coord_
 
     else:
@@ -415,10 +420,10 @@ def polygonplot_plot(df: pd.DataFrame,
         ax.legend(handles=legend_patches,     loc='center left', 
             bbox_to_anchor=(1, 0.5), title='Cell Type')
 
-    ax.title(f'{sample}')
+    # ax.title(sample)
 
     if save_plot == True:
-        suffix_save = f'plot_{region_}_{gene_}' 
+        suffix_save = suffix_save + "_" + sample
         save_figure(fig, suffix_save, name_dir, format='svg')
 
     plt.show()
