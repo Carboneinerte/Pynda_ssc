@@ -36,7 +36,7 @@ pip install leidenalg, xlsxwriter, geojson, goatools, polars
 
 -   To start using the notebooks, **copy** one from "notebooks_blank" and rename it. It must ends with "...\_in_use.ipynb".
 
--   Please, do not modufy or use the notebooks in "notebooks_blank". You won't be able to import function from the module anyway.
+-   Please, do not modify or use the notebooks in "notebooks_blank". You won't be able to import function from the module anyway.
 
 ### Optional
 

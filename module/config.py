@@ -16,4 +16,14 @@ dir_main = ""
 # order of cell types for plotting
 # order-list = 
 
+
+def sample_name_import(name_experiment:str):
+    
+    dict_exp_name = {
+        # 'circa-SD' : ['circa4-IGM-ZT01','circa4-IGM-ZT05','circa4-IGM-ZT09','circa4-IGM-ZT13','circa4-IGM-ZT17','circa4-IGM-ZT21', "SD1-ZT01","SD1-ZT05","SD1-ZT09","SD1-ZT13","SD1-ZT17","SD1-ZT21"], #EXAMPLE
+
+        }
+    
+    return dict_exp_name[name_experiment]
+
 #Default colors?
