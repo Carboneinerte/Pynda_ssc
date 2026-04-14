@@ -182,48 +182,81 @@ def cluster_plot(adata_to_plot:sc.AnnData,
         samples_ids = adata_to_plot.obs['sample'].unique().sort_values()
 
         # Map all cells
-        b = int(adata_to_plot.obs['sample'].nunique() / 3)
-        if b == 0:
-            b=1
-        if len(samples_ids) <= 3:
-            a = len(samples_ids)
-            b = 1
+        if adata_to_plot.obs['sample'].nunique() == 1:
+            plt.figure(figsize=(15,6))
+            if cluster_to_map != ['all']:
+                cluster_to_map2 = cluster_to_map
+                color_samples = ['red','green','blue',"black",'magenta','pink',"darkgreen",'coral','orchid','pink']
+                while len(color_samples) < len(cluster_to_map):
+                    color_samples.extend(color_samples)
+        
+                clusters_plot = {}
+                for l in range(0, len(cluster_to_map)):
+                    dict_temp = {cluster_to_map[l]:color_samples[l]}
+                    clusters_plot.update(dict_temp) 
+
+            for idx, sample in enumerate(samples_ids):
+                adata_sel = adata_to_plot[(adata_to_plot.obs['sample'] == sample)]
+                cluster_to_map2 = adata_sel.obs[cluster_to_use].unique()
+                for cluster_id in cluster_to_map2:
+                    cluster_data = adata_sel.obs[adata_sel.obs[cluster_to_use] == cluster_id]
+                    if cluster_to_map != ['all']:
+                        colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
+                    else:
+                        colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
+                    plt.scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=size, marker = 'o', label=cluster_data[label_to_use].unique()[0], rasterized=True)
+                    plt.title(f"Sample {sample}")
+                    # plt.xaxis.set_tick_params(labelbottom=False)
+                    # plt.yaxis.set_tick_params(labelleft=False)
+                    plt.gca().set_aspect('equal', adjustable='box')
+            plt.legend(markerscale=5, scatterpoints=10,fontsize='small', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, mode="expand", ncol =3)
+            plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.3)
+            plt.show()
+
+
         else:
-            a=3
+            b = int(adata_to_plot.obs['sample'].nunique() / 3)
+            if b == 0:
+                b=1
+            if len(samples_ids) <= 3:
+                a = len(samples_ids)
+                b = 1
+            else:
+                a=3
+                
+            fig, axs = plt.subplots(b,a,
+                                    figsize=(15,6))
+            axs = axs.flatten()# Mapping of clusters
+
+            if cluster_to_map != ['all']:
+                cluster_to_map2 = cluster_to_map
+                color_samples = ['red','green','blue',"black",'magenta','pink',"darkgreen",'coral','orchid','pink']
+                while len(color_samples) < len(cluster_to_map):
+                    color_samples.extend(color_samples)
             
-        fig, axs = plt.subplots(b,a,
-                                figsize=(15,6))
-        axs = axs.flatten()# Mapping of clusters
+                clusters_plot = {}
+                for l in range(0, len(cluster_to_map)):
+                    dict_temp = {cluster_to_map[l]:color_samples[l]}
+                    clusters_plot.update(dict_temp)    
 
-        if cluster_to_map != ['all']:
-            cluster_to_map2 = cluster_to_map
-            color_samples = ['red','green','blue',"black",'magenta','pink',"darkgreen",'coral','orchid','pink']
-            while len(color_samples) < len(cluster_to_map):
-                color_samples.extend(color_samples)
-        
-            clusters_plot = {}
-            for l in range(0, len(cluster_to_map)):
-                dict_temp = {cluster_to_map[l]:color_samples[l]}
-                clusters_plot.update(dict_temp)    
-
-        
-        for idx, sample in enumerate(samples_ids):
-            adata_sel = adata_to_plot[(adata_to_plot.obs['sample'] == sample)]
-            cluster_to_map2 = adata_sel.obs[cluster_to_use].unique()
-            for cluster_id in cluster_to_map2:
-                cluster_data = adata_sel.obs[adata_sel.obs[cluster_to_use] == cluster_id]
-                if cluster_to_map != ['all']:
-                    colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
-                else:
-                    colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
-                axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=size, marker = 'o', label=cluster_data[label_to_use].unique()[0], rasterized=True)
-                axs[idx].set_title(f"Sample {sample}")
-                axs[idx].xaxis.set_tick_params(labelbottom=False)
-                axs[idx].yaxis.set_tick_params(labelleft=False)
-                axs[idx].set_aspect('equal', adjustable='box')
-        # plt.legend(markerscale=5, scatterpoints=10,fontsize='small', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, mode="expand", ncol =3)
-        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.3)
-        plt.show()
+            
+            for idx, sample in enumerate(samples_ids):
+                adata_sel = adata_to_plot[(adata_to_plot.obs['sample'] == sample)]
+                cluster_to_map2 = adata_sel.obs[cluster_to_use].unique()
+                for cluster_id in cluster_to_map2:
+                    cluster_data = adata_sel.obs[adata_sel.obs[cluster_to_use] == cluster_id]
+                    if cluster_to_map != ['all']:
+                        colors = clusters_plot[cluster_id] if cluster_id in clusters_plot else "none" ### for selected clusters in cluster_plot
+                    else:
+                        colors = cluster_data['leiden_colors'].unique()[0] ### for all clusters
+                    axs[idx].scatter(cluster_data['x_centroid'], cluster_data['y_centroid'], color=colors, s=size, marker = 'o', label=cluster_data[label_to_use].unique()[0], rasterized=True)
+                    axs[idx].set_title(f"Sample {sample}")
+                    axs[idx].xaxis.set_tick_params(labelbottom=False)
+                    axs[idx].yaxis.set_tick_params(labelleft=False)
+                    axs[idx].set_aspect('equal', adjustable='box')
+            # plt.legend(markerscale=5, scatterpoints=10,fontsize='small', bbox_to_anchor=(1.02, 1), loc='upper left', borderaxespad=0, mode="expand", ncol =3)
+            plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.1, hspace=0.3)
+            plt.show()
         
         if save_plot == True:
             suffix_save = f'clusterplot_{cluster_to_use}' 

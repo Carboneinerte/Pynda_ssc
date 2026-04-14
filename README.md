@@ -6,11 +6,13 @@
 ``` python
 git config user.name 'yourusername'
 git config user.email rbiopandas2@gmail.com # or your own Github account
+git init
 ```
 
 -   Install Conda and create environment
 
     -   On Jetstream, avoid installing the env in /home/, prefer to install it in /media/volume/...
+    -   Make sure you have still some space in /home/, conda apparently need some space (for cache ?)
 
 ``` python
 conda create --prefix=/media/volume/.../yourEnvName python==3.11
