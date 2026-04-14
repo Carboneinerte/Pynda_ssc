@@ -1174,3 +1174,33 @@ def interactive_volcano_plot(result_list:list,
     )
 
     return volcano_plot
+
+def optimize_resolution(adata,
+                        # single_sample:bool = True,
+                        sample_select:list = ['all'],
+                        min_res:int = 1,
+                        max_res:int = 11,
+                        step_res:int = 1,
+                        size_plot:float = 0.1 
+                        ):
+    
+    if sample_select[0]=="all":
+        adata_temp = adata
+    else:
+        adata_temp = adata[adata.obs['sample'].isin(sample_select)]
+    print(adata_temp.obs['sample'].unique())
+
+    for resolution in range(min_res,max_res,step_res):
+        resolution = resolution / 10
+        sc.tl.leiden(adata_temp,
+                     resolution=resolution,
+                     key_added='leiden')
+        print('leiden resolution = ', resolution)
+        da.cluster_plot(adata_temp,
+                cluster_to_use='leiden',
+                cluster_to_map = ['all'],
+                name_dir=name_dir,
+                size=size_plot
+                )
+    
+    return adata_temp
