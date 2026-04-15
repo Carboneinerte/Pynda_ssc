@@ -9,6 +9,7 @@ from module.misc import cell_class
 from IPython.display import clear_output
 import progressbar
 from module.misc import genes_list
+import module.dataviz_analysis as da
 
 
 ### Automatic initial annotation
@@ -194,7 +195,7 @@ def circascore_annot(adata:sc.AnnData,
 ###
 
 def optimize_resolution(adata,
-                        # single_sample:bool = True,
+                        name_dir,
                         sample_select:list = ['all'],
                         min_res:int = 1,
                         max_res:int = 11,
@@ -214,11 +215,10 @@ def optimize_resolution(adata,
                      resolution=resolution,
                      key_added='leiden')
         print('leiden resolution = ', resolution)
+        sc.pl.umap(adata_temp, color='leiden',  s=1.5)
         da.cluster_plot(adata_temp,
                 cluster_to_use='leiden',
                 cluster_to_map = ['all'],
                 name_dir=name_dir,
                 size=size_plot
                 )
-    
-    return adata_temp
