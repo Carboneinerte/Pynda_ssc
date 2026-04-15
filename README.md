@@ -1,6 +1,9 @@
 ## To do list before starting the analysis:
 
 -   Clone or copy repository from Github (main branch) where you want to store it. It will be your "dir_main" folder.
+``` python
+git clone https://github.com/Carboneinerte/Pynda_ssc.git
+```
 -   Config git
 
 ``` python
