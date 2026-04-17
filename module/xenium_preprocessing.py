@@ -97,11 +97,11 @@ def import_xenium(samples_ids:  list,
         adata.layers["counts"] = adata.X.copy()
         all_cells = adata.shape[0]
 
-        if remove_noise == True:
+        if remove_noise:
             mask = [gene not in list_noise for gene in adata.var_names]
             adata = adata[:, mask].copy()
 
-        if use_cell_list == True:
+        if use_cell_list:
             try:
                 tmp = pd.read_csv(f'{dir_raw}/{sample_id}/{sample_id}_ROI_cells_stats.csv', comment = '#')
                 tmp_list = list(tmp['Cell ID'])
@@ -119,7 +119,7 @@ def import_xenium(samples_ids:  list,
         adatas.append(adata)
         print(f"Sample {sample_id} done")
         print(" ")
-        if MMC == True:
+        if MMC:
             if not os.path.exists(f"{dir_processed}/Correlation_Mapping/{name_dir}/"):
                 os.makedirs(f"{dir_processed}/Correlation_Mapping/{name_dir}/")
                 print("Correlation_Mapping folder created")
