@@ -215,14 +215,15 @@ def cluster_plot(adata_to_plot:sc.AnnData,
 
 
         else:
-            b = int(adata_to_plot.obs['sample'].nunique() / 3)
-            if b == 0:
-                b=1
             if len(samples_ids) <= 3:
-                a = len(samples_ids)
-                b = 1
-            else:
+                b=1
+                a=len(samples_ids)
+            elif adata_to_plot.obs['sample'].nunique() % 3 == 0:
+                b = int(adata_to_plot.obs['sample'].nunique() / 3)
                 a=3
+            else:
+                b = int(adata_to_plot.obs['sample'].nunique() / 3)
+                a = 3
                 
             fig, axs = plt.subplots(b,a,
                                     figsize=(15,6))
