@@ -232,13 +232,20 @@ def clustering_scanpy(adata: sc.AnnData,
     sc.pp.pca(adata, n_comps = pca_compo)
     print(f"PCA done")
     sc.pl.pca_variance_ratio(adata, n_pcs=pca_compo, log=False)
-    sc.pl.pca(
-        adata,
-        color=["sample","sample"],
-        dimensions=[(0, 1), (2, 3)],
-        ncols=2,
-        size=1,
-    )
+    if "sample" in adata.obs.columns:
+        sc.pl.pca(
+            adata,
+            color=["sample","sample"],
+            dimensions=[(0, 1), (2, 3)],
+            ncols=2,
+            size=1,
+        )
+    else:
+        sc.pl.pca(adata,
+            dimensions=[(0, 1), (2, 3)],
+            ncols=2,
+            size=1,)
+
     sc.pp.neighbors(adata)
     print(f"Neighbors done")
     sc.tl.umap(adata, min_dist = 1)
