@@ -25,8 +25,8 @@ import warnings
 from anndata import ImplicitModificationWarning
 warnings.simplefilter('ignore', ImplicitModificationWarning)
 
-from module.misc import save_figure, prot_name_annot
-from module.config_local import dir_processed, dir_raw
+from .misc import save_figure, prot_name_annot
+from .config_local import dir_processed, dir_raw
 
 
 import holoviews as hv

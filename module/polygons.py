@@ -2,7 +2,8 @@ import pandas as pd
 import geopandas as gpd
 import geojson
 import argparse
-from config_local import dir_raw, dir_processed
+import os
+from .config_local import dir_raw, dir_processed
 
 parser = argparse.ArgumentParser(
     description='Convert cell boundaries to GeoJSON.'
@@ -16,7 +17,7 @@ name_dir = args.name_dir
 
 
 def cell_boundaries_geojson(dir_raw, dir_processed, sample_id, name_dir):
-    cells = pd.read_csv(f"{dir_raw}/{name_dir}/{sample_id}/cell_boundaries.csv.gz")
+    cells = pd.read_parquet(f"{dir_raw}/{name_dir}/{sample_id}/cell_boundaries.parquet")
     
     cells.groupby("cell_id")[['vertex_x', 'vertex_y']].agg({"vertex_x": list, "vertex_y": list}).reset_index().rename(columns={"vertex_x": "xs", "vertex_y": "ys"})
     cells['cell_id'] = sample_id + '_' + cells['cell_id']

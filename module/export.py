@@ -3,7 +3,7 @@ import pandas as pd
 import geojson
 import geopandas as gpd
 
-from module.config_local import dir_processed, dir_raw
+from .config_local import dir_processed, dir_raw
 
 
 

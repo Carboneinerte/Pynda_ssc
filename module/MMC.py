@@ -1,13 +1,13 @@
 import scanpy as sc
-from xenium_preprocessing import import_xenium
-from config_local import dir_raw, dir_processed, sample_name_import
+from .xenium_preprocessing import import_xenium
+from .config_local import dir_raw, dir_processed, sample_name_import
 import pandas as pd
 import os
 import argparse
 import numpy as np
 
 parser = argparse.ArgumentParser(
-    description='Convert cell boundaries to GeoJSON.'
+    description='Import Xenium raw files and exctract gene expression for MMC.'
     )
 
 parser.add_argument('--name_dir', type=str, help='Name of the experience')
@@ -19,17 +19,17 @@ samples_ids = sample_name_import(name_dir)
 def create_folders(name_dir:str,
                    dir_processed: str = dir_processed
                    ):
-    if not os.path.exists(f"{dir_processed}/csv/{name_dir}/"):
-        os.makedirs(f"{dir_processed}/csv/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/{name_dir}/csv/"):
+        os.makedirs(f"{dir_processed}/{name_dir}/csv/")
         print("csv folder created")
-    if not os.path.exists(f"{dir_processed}/h5ad/{name_dir}/"):
-        os.makedirs(f"{dir_processed}/h5ad/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/{name_dir}/h5ad/"):
+        os.makedirs(f"{dir_processed}/{name_dir}/h5ad/")
         print("h5ad folder created")
-    if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/"):
-        os.makedirs(f"{dir_processed}/analysis/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/{name_dir}/analysis/"):
+        os.makedirs(f"{dir_processed}/{name_dir}/analysis/")
         print('Analysis folder created')
-    if not os.path.exists(f"{dir_processed}/plot/{name_dir}/"):
-        os.makedirs(f"{dir_processed}/plot/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/{name_dir}/plot/"):
+        os.makedirs(f"{dir_processed}/{name_dir}/plot/")
         print('Plotfolder created')
 
 def undernoise_list(samples_ids:list,
@@ -41,7 +41,7 @@ def undernoise_list(samples_ids:list,
     for idx, sample in enumerate(samples_ids):
         print('Start Sample :', sample)
         print(idx+1," / ", len(samples_ids))
-        df = pd.read_csv(f'{dir_raw}/{name_dir}/{sample}/transcripts.csv.gz')
+        df = pd.read_parquet(f'{dir_raw}/{name_dir}/{sample}/transcripts.parquet')
         df = df[df['qv']>=20]
         
         data = pd.DataFrame({'feature_name': df.feature_name.value_counts().index,'count' : df.feature_name.value_counts()})
@@ -119,10 +119,10 @@ def import_xenium(samples_ids:  list,
         print(f"Sample {sample_id} done")
         print(" ")
         if MMC:
-            if not os.path.exists(f"{dir_processed}/Correlation_Mapping/{name_dir}/"):
-                os.makedirs(f"{dir_processed}/Correlation_Mapping/{name_dir}/")
+            if not os.path.exists(f"{dir_processed}/{name_dir}/Correlation_Mapping/"):
+                os.makedirs(f"{dir_processed}//{name_dir}/Correlation_Mapping/")
                 print("Correlation_Mapping folder created")
-            adata.write(f"{dir_processed}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
+            adata.write(f"{dir_processed}/{name_dir}/h5ad/{name_dir}_{sample_id}_forMMC.h5ad")
 
     print(f"Read all {len(samples_ids)} samples")
 
@@ -132,7 +132,7 @@ def import_xenium(samples_ids:  list,
     ### Add a sample column to the metadata
     adata.obs['sample'] = adata.obs_names.map(lambda name: name.split('_')[0])
     # samples = adata.obs['sample'].unique()
-    adata.write(f"{dir_processed}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
+    adata.write(f"{dir_processed}/{name_dir}/h5ad/{name_dir}_import.h5ad.gz", compression = "gzip")
     return adata
 
 

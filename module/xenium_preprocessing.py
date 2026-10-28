@@ -5,17 +5,17 @@ import os
 import glob
 from datetime import datetime
 from matplotlib.pyplot import rc_context
-from module.misc import list_annotations
-from module.dataviz_analysis import cluster_plot
 
-from module.config_local import dir_processed, dir_raw
+from .misc import list_annotations
+from .dataviz_analysis import cluster_plot
+from .config_local import dir_processed, dir_raw
 
 
 def create_folders(name_dir:str,
                    dir_processed: str = dir_processed
                    ):
-    if not os.path.exists(f"{dir_processed}/csv/{name_dir}/"):
-        os.makedirs(f"{dir_processed}/csv/{name_dir}/")
+    if not os.path.exists(f"{dir_processed}/{name_dir}/csv/"):
+        os.makedirs(f"{dir_processed}/{name_dir}/csv/")
         print("csv folder created")
     if not os.path.exists(f"{dir_processed}/h5ad/{name_dir}/"):
         os.makedirs(f"{dir_processed}/h5ad/{name_dir}/")
