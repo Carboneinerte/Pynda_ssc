@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
-from module.config_local import dir_raw
+from config_local import dir_raw
 
 def lighter_transcript_parquet_resesg(samples_ids:list,
                                gene_list:list,
@@ -54,11 +54,37 @@ def lighter_transcript_parquet(samples_ids:list,
     for sample in samples_ids:
         print(f"{sample}")
 
-
-        df_trans = pd.read_parquet(f'{dir_raw}/{sample}/transcripts.parquet',
+        if gene_list:
+            df_trans = pd.read_parquet(f'{dir_raw}/{sample}/transcripts.parquet',
                                 columns=['cell_id','feature_name','x_location','y_location',"qv"],
                                 filters=[('qv','>=',20), ("feature_name", "in", gene_list)])
+        else:
+            df_trans = pd.read_parquet(f'{dir_raw}/{sample}/transcripts.parquet',
+                                columns=['cell_id','feature_name','x_location','y_location',"qv"],
+                                filters=[('qv','>=',20)])
         
 
         df_trans.to_parquet(f'{dir_raw}/{sample}/transcripts_light.parquet')
         print(" ")
+
+
+def lighter_transcript_parquet_indi(sample:str,
+                               gene_list:list,
+                               name_dir:str,
+                               dir_raw:str = dir_raw,
+                               ):
+
+    print(f"{sample}")
+
+    if gene_list:
+        df_trans = pd.read_parquet(f'{dir_raw}/{name_dir}/{sample}/transcripts.parquet',
+                            columns=['cell_id','feature_name','x_location','y_location',"qv"],
+                            filters=[('qv','>=',20), ("feature_name", "in", gene_list)])
+    else:
+        df_trans = pd.read_parquet(f'{dir_raw}/{name_dir}/{sample}/transcripts.parquet',
+                            columns=['cell_id','feature_name','x_location','y_location',"qv"],
+                            filters=[('qv','>=',20)])
+    
+
+    df_trans.to_parquet(f'{dir_raw}/{name_dir}/{sample}/transcripts_light.parquet')
+    print(" ")

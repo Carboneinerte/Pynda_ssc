@@ -1,5 +1,5 @@
 import pandas as pd
-from .config_local import dir_main,dir_processed
+from config_local import dir_main,dir_processed
 from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
 import os

@@ -2,10 +2,38 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from module.config_local import dir_processed, dir_raw, dir_main
-from module.misc import save_figure
+from config_local import dir_processed, dir_raw, dir_main
+from misc import save_figure
 from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
+
+def undernoise_list_indi(sample:str,
+                    name_dir:str,
+                    dir_raw:str = dir_raw,
+                    dir_processed:str = dir_processed,
+                    ):
+
+
+    print('Start Sample :', sample)
+    df = pd.read_parquet(f'{dir_raw}/{name_dir}/{sample}/transcripts_light.parquet')
+    
+    data = pd.DataFrame({'feature_name': df.feature_name.value_counts().index,'count' : df.feature_name.value_counts()})
+    data.sort_index(inplace=True)
+
+    data['type'] = data['feature_name'].apply(lambda x: x.split('_')[0])
+
+    percentile_threshold:float = 99.5
+    threshold = np.percentile(data[data['type']=="NegControlProbe"]['count'].values,percentile_threshold)
+    print('threshold = ', threshold)
+
+    data['logfoldovernoise'] = data['count'].apply(lambda x: np.log(x / threshold))
+    data_gen_only = data[~(data['feature_name'].str.contains('_'))]
+    print('nb of gene under threshold : ', data_gen_only[data_gen_only['logfoldovernoise']<0].shape[0])
+    set_undernoise = set(data_gen_only[data_gen_only['logfoldovernoise']<0]['feature_name'].values)
+
+    print(" ")
+        
+    pd.Series(list(set_undernoise)).to_csv(f'{dir_processed}/{name_dir}/QC/undernoise_{sample}.csv')
 
 def plot_mcc_density (sample_1: list,
                       name_dir: str,

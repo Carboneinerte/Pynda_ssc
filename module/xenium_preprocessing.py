@@ -6,9 +6,9 @@ import glob
 from datetime import datetime
 from matplotlib.pyplot import rc_context
 
-from .misc import list_annotations
-from .dataviz_analysis import cluster_plot
-from .config_local import dir_processed, dir_raw
+from misc import list_annotations
+from dataviz_analysis import cluster_plot
+from config_local import dir_processed, dir_raw
 
 
 def create_folders(name_dir:str,

@@ -8,8 +8,9 @@ import numpy as np
 from module.misc import cell_class
 from IPython.display import clear_output
 import progressbar
-from module.misc import genes_list
-import module.dataviz_analysis as da
+
+from .misc import genes_list
+import .dataviz_analysis as da
 
 
 ### Automatic initial annotation
