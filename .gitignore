@@ -22,3 +22,6 @@ notebook_in_use
 .snakemake/
 To_clean/
 n
+.github/
+precomputed_stats_ABC_revision_230821.h5
+mouse_markers_230821.json
