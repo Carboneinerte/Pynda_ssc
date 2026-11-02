@@ -1,4 +1,4 @@
-from config_local import dir_processed
+from module.config_local import dir_processed
 import os
 import argparse
 

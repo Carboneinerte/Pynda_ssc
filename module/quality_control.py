@@ -2,8 +2,8 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-from config_local import dir_processed, dir_raw, dir_main
-from misc import save_figure
+from module.config_local import dir_processed, dir_raw, dir_main
+from module.misc import save_figure
 from datetime import datetime
 today = datetime.today().strftime('%Y-%m-%d')
 

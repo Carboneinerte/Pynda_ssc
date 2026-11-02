@@ -9,14 +9,13 @@ from module.misc import cell_class
 from IPython.display import clear_output
 import progressbar
 
-from .misc import genes_list
-import .dataviz_analysis as da
+from module.misc import genes_list
+import module.dataviz_analysis as da
 
 
 ### Automatic initial annotation
 def automatic_initial_annotation(adata_spatial:sc.AnnData,
-                                 cluster_col: str
-                                 :
+                                 cluster_col: str):
     
     cont_tab = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:subclass_name'], normalize="index")
     cont_tab_class = pd.crosstab(adata_spatial.obs[cluster_col], adata_spatial.obs['mmc:class_name'], normalize="index")

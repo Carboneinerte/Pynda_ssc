@@ -1,6 +1,6 @@
 import pathlib
 import os
-from config_local import dir_processed
+from module.config_local import dir_processed
 import argparse
 
 parser = argparse.ArgumentParser(description='Initial QC investigations')
@@ -11,6 +11,8 @@ parser.add_argument('--sample', type=str, required=True, help='Sample name to pr
 args = parser.parse_args()
 name_dir = args.name_dir
 sample_id = args.sample
+
+print("Start mapping: ", sample_id)
 
 os.environ['NUMEXPR_NUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
@@ -65,4 +67,4 @@ mapping_runner = FromSpecifiedMarkersRunner(
 
 mapping_runner.run()
 
-os.delete(baseline_json_output_path)
+#os.delete(baseline_json_output_path)

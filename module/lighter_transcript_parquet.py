@@ -1,7 +1,7 @@
 import pandas as pd
 import geopandas as gpd
 from shapely.geometry import box
-from config_local import dir_raw
+from module.config_local import dir_raw
 
 def lighter_transcript_parquet_resesg(samples_ids:list,
                                gene_list:list,

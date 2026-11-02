@@ -6,9 +6,9 @@ import glob
 from datetime import datetime
 from matplotlib.pyplot import rc_context
 
-from misc import list_annotations
-from dataviz_analysis import cluster_plot
-from config_local import dir_processed, dir_raw
+from module.misc import list_annotations
+from module.dataviz_analysis import cluster_plot
+from module.config_local import dir_processed, dir_raw
 
 
 def create_folders(name_dir:str,
@@ -17,7 +17,7 @@ def create_folders(name_dir:str,
     if not os.path.exists(f"{dir_processed}/{name_dir}/csv/"):
         os.makedirs(f"{dir_processed}/{name_dir}/csv/")
         print("csv folder created")
-    if not os.path.exists(f"{dir_processed}/h5ad/{name_dir}/"):
+    if not os.path.exists(f"{dir_processed}/{name_dir}/h5ad/"):
         os.makedirs(f"{dir_processed}/h5ad/{name_dir}/")
         print("h5ad folder created")
     if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/"):
@@ -36,7 +36,7 @@ def undernoise_list(samples_ids:list,
     for idx, sample in enumerate(samples_ids):
         print('Start Sample :', sample)
         print(idx+1," / ", len(samples_ids))
-        df = pd.read_parquet(f'{dir_raw}/{sample}/transcripts.parquet',filters=[("qv",">=",20)])
+        df = pd.read_parquet(f'{dir_raw}/{name_dir}/{sample}/transcripts_light.parquet')
         
         data = pd.DataFrame({'feature_name': df.feature_name.value_counts().index,'count' : df.feature_name.value_counts()})
         data.sort_index(inplace=True)
@@ -57,7 +57,7 @@ def undernoise_list(samples_ids:list,
 
         print(" ")
         
-    pd.Series(list(set_undernoise)).to_csv(f'{dir_processed}/analysis/{name_dir}/undernoise_{name_dir}.csv')
+    pd.Series(list(set_undernoise)).to_csv(f'{dir_processed}/{name_dir}/analysis/undernoise_{name_dir}.csv')
     list_noise = list(set_undernoise)
     return list_noise
 
@@ -89,8 +89,8 @@ def import_xenium(samples_ids:  list,
     print("## Start importation ##")
 
     for sample_id in samples_ids:
-        adata = sc.read_10x_h5(f"{dir_raw}/{sample_id}/cell_feature_matrix.h5")
-        df = pd.read_csv(f"{dir_raw}/{sample_id}/cells.csv.gz")
+        adata = sc.read_10x_h5(f"{dir_raw}/{name_dir}/{sample_id}/cell_feature_matrix.h5")
+        df = pd.read_csv(f"{dir_raw}/{name_dir}/{sample_id}/cells.csv.gz")
         df.set_index(adata.obs_names, inplace=True)
         adata.obs = df.copy()
         adata.obsm["spatial"] = adata.obs[["x_centroid", "y_centroid"]].copy().to_numpy()
@@ -120,10 +120,10 @@ def import_xenium(samples_ids:  list,
         print(f"Sample {sample_id} done")
         print(" ")
         if MMC:
-            if not os.path.exists(f"{dir_processed}/Correlation_Mapping/{name_dir}/"):
-                os.makedirs(f"{dir_processed}/Correlation_Mapping/{name_dir}/")
+            if not os.path.exists(f"{dir_processed}/{name_dir}/Correlation_Mapping/"):
+                os.makedirs(f"{dir_processed}/{name_dir}/Correlation_Mapping/")
                 print("Correlation_Mapping folder created")
-            adata.write(f"{dir_processed}/h5ad/{name_dir}/{name_dir}_{sample_id}_forMMC.h5ad")
+            adata.write(f"{dir_processed}/{name_dir}/h5ad/{name_dir}_{sample_id}_forMMC.h5ad")
 
     print(f"Read all {len(samples_ids)} samples")
 
@@ -133,7 +133,7 @@ def import_xenium(samples_ids:  list,
     ### Add a sample column to the metadata
     adata.obs['sample'] = adata.obs_names.map(lambda name: name.split('_')[0])
     # samples = adata.obs['sample'].unique()
-    adata.write(f"{dir_processed}/h5ad/{name_dir}/{name_dir}_import.h5ad.gz", compression = "gzip")
+    adata.write(f"{dir_processed}/{name_dir}/h5ad/{name_dir}_import.h5ad.gz", compression = "gzip")
     return adata
 
 def mmc_merge(adata: sc.AnnData,
@@ -148,7 +148,7 @@ def mmc_merge(adata: sc.AnnData,
     name_dir : string
     '''
 
-    dir_corr = f'{dir_processed}/Correlation_Mapping/{name_dir}/'
+    dir_corr = f'{dir_processed}/{name_dir}/Correlation_Mapping/'
 
     list_files = glob.glob(dir_corr + f'{name_dir}*')
 
@@ -162,14 +162,17 @@ def mmc_merge(adata: sc.AnnData,
                 csv_temp = pd.read_csv(files, comment = '#')
                 corr = pd.concat([corr, csv_temp], ignore_index=True)
 
-        HC3_MMC = corr
-        HC3_MMC.index = HC3_MMC['cell_id']
-        HC3_MMC.index.name = None
-        HC3_MMC.columns = [f"mmc:{i}" for i in HC3_MMC.columns]
-        mmc_dict_class = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:class_name']))
-        mmc_dict_classcoef = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:class_correlation_coefficient']))
-        mmc_dict_subclass = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:subclass_name']))
-        mmc_dict_supertype = dict(zip(HC3_MMC['mmc:cell_id'], HC3_MMC['mmc:supertype_name']))
+        MMC_output = corr
+        MMC_output.index = MMC_output['cell_id']
+        MMC_output.index.name = None
+        MMC_output.columns = [f"mmc:{i}" for i in MMC_output.columns]
+        mmc_dict_class = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:class_name']))
+        mmc_dict_subclass = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:subclass_name']))
+        mmc_dict_supertype = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:supertype_name']))
+        if "mmc:class_correlation_coefficient" in MMC_output.colums:
+            mmc_dict_classcoef = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:class_correlation_coefficient']))
+        elif "mmc:subclass_bootstrapping_probability" in MMC_output.columns:
+            mmc_dict_classcoef = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:subclass_bootstrapping_probability']))
 
         adata.obs['mmc:class_name'] = adata.obs['cell_id'].map(mmc_dict_class)
         adata.obs['mmc:class_correlation_coefficient'] = adata.obs['cell_id'].map(mmc_dict_classcoef)

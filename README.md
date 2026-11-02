@@ -57,7 +57,7 @@ pip install leidenalg, xlsxwriter, geojson, goatools, polars
 
 -   Draw region of interest in Xenium explorer and export the list of cells
     -   save as : "{dir_raw}/{sample_name}/{sample_name}\_ROI_cells_stats.csv"\
-        !["Xenium explorer export cell list"](module\image_readme\XE_cell_list.png)
+        !["Xenium explorer export cell list"](image_readme\XE_cell_list.png)
 -   Create "light" transcripts.parquet with only high quality gene transcripts (useful for unassigned transcripts analysis)
 -   Run [this notebook](./v11_Polygons_preprocessing.ipynb) if you plan to do plots with cell polygons
 -   Run [this notebook](./V11Z_Xenium_Quality_control.ipynb) to plot raw metrics and compare samples

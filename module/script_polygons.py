@@ -3,7 +3,7 @@ import geopandas as gpd
 import geojson
 import argparse
 import os
-from config_local import dir_raw, dir_processed
+from module.config_local import dir_raw, dir_processed
 
 parser = argparse.ArgumentParser(
     description='Convert cell boundaries to GeoJSON.'

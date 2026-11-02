@@ -1,8 +1,8 @@
 import argparse
 import os
 
-from lighter_transcript_parquet import lighter_transcript_parquet_indi
-from config_local import dir_raw
+from module.lighter_transcript_parquet import lighter_transcript_parquet_indi
+from module.config_local import dir_raw
 
 parser = argparse.ArgumentParser(
     description='Import Xenium raw files and exctract gene expression for MMC.'

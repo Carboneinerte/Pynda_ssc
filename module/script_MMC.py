@@ -1,5 +1,5 @@
 import scanpy as sc
-from config_local import dir_raw, dir_processed
+from module.config_local import dir_raw, dir_processed
 import pandas as pd
 import os
 import argparse

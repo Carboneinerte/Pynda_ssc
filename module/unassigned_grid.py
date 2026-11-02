@@ -9,8 +9,8 @@ import scanpy as sc
 import os
 from IPython.display import clear_output
 
-from .config_local import dir_raw,dir_processed
-from .export import coordinates_to_Geojson
+from module.config_local import dir_raw,dir_processed
+from module.export import coordinates_to_Geojson
 
 
 def bins_for_geom(geom,
