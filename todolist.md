@@ -1,6 +1,6 @@
 # README
 
-- [ ] Fix links
+- [X] Fix links
 
 # Spatial Analysis
 - [X] Cell neighbors
@@ -10,7 +10,7 @@
 
 - [X] Update to python 3.11 to use holoviz
 
-- [ ] export requirements.txt
+- [X] export requirements.txt
 
 - Manual map
     - [ ] Cell list

@@ -154,6 +154,7 @@ def cluster_plot(adata_to_plot:sc.AnnData,
 
     label_to_use = cluster_to_use
     test_dict = {
+    'mmc:subclass_name_num':'mmc:subclass_name',
     'cell_type_newnum_auto_sub':'cell_type_auto_sub',
     'cell_type_newnum_auto':'cell_type_auto',
     'cell_type_newnum_final':'cell_type_final',
@@ -265,6 +266,7 @@ def cluster_plot(adata_to_plot:sc.AnnData,
 
 def polygonplot_dataprep(adata_main: sc.AnnData,
                          sample_to_plot : str,
+                         name_dir : str,
                          dir_processed : str = dir_processed,
                          cluster_to_use : str = 'cell_type_newnum_final',
                          cmap_ : str = 'tab20b'
@@ -286,7 +288,7 @@ def polygonplot_dataprep(adata_main: sc.AnnData,
 
     adata_plot = adata_main[adata_main.obs['sample']==all_samples[sample_position]]
     
-    cells_geo = gpd.read_file(f'{dir_processed}/coordinates/polygons/{all_samples[sample_position]}_cells.geojson')
+    cells_geo = gpd.read_file(f'{dir_processed}/{name_dir}/polygons/{all_samples[sample_position]}_cells.geojson')
     cells_geo['centroid'] = cells_geo['geometry'].centroid
     cells_geo['x_coor'] = cells_geo['centroid'].x
     cells_geo['y_coor'] = cells_geo['centroid'].y
@@ -996,6 +998,211 @@ def DEG_two_conditions(adata: sc.AnnData,
         clear_output()
         print('Extraction done')
 
+def deseq2_one_condition_covariates(adata:sc.AnnData,
+                         name_dir:str,
+                         cluster_to_use: str,
+                         group_col: str,
+                         filters_bool: bool,
+                         filters_dict: dict,
+                         pseudoreplicates: int | None = None,
+                         dir_processed: str = dir_processed,
+                         covariates: list[str] | None = None,
+                         continuous_covariates: list[str] | None = None,
+                         sample_col: str = 'sample',
+                         counts_layer: str = 'counts',
+                         contrast: tuple[str, str] | None = None,
+                         min_samples_per_group: int = 2,
+                         ):
+    '''
+    Run a sample-level pseudobulk DESeq2 comparison within each cell type.
+
+    Covariates listed in ``continuous_covariates`` are averaged across cells
+    within each sample and cell type, then standardized across samples. Other
+    covariates must be constant within each sample and are modeled as factors.
+    ``contrast`` is (test_group, reference_group); by default, the first two
+    observed groups are compared in their observed order.
+    '''
+    if pseudoreplicates is not None:
+        warnings.warn(
+            "pseudoreplicates is deprecated and ignored; DESeq2 now uses one "
+            "pseudobulk per biological sample.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+
+    covariates = list(covariates or [])
+    continuous_covariates = list(continuous_covariates or [])
+    if len(covariates) != len(set(covariates)):
+        raise ValueError("covariates must not contain duplicates.")
+    if not set(continuous_covariates).issubset(covariates):
+        raise ValueError("continuous_covariates must also be listed in covariates.")
+    if group_col in covariates or sample_col in covariates:
+        raise ValueError("group_col and sample_col cannot also be covariates.")
+
+    required_obs = [cluster_to_use, group_col, sample_col, *covariates]
+    missing_obs = [column for column in required_obs if column not in adata.obs]
+    if missing_obs:
+        raise KeyError(f"Missing required adata.obs columns: {missing_obs}")
+    if counts_layer not in adata.layers:
+        raise KeyError(f"Counts layer {counts_layer!r} is missing from adata.layers.")
+
+    ddf = []
+    ddf_filter = []
+    list_ignored = []
+    list_celltypes_sheet = []
+    celltypes = adata.obs[cluster_to_use].dropna().unique()
+
+    for cell in celltypes:
+        print(f"Starting analysis of {cell}")
+        cell_mask = adata.obs[cluster_to_use].eq(cell).to_numpy()
+        cell_obs = adata.obs.loc[cell_mask]
+        cell_counts = adata.layers[counts_layer][cell_mask]
+        samples = pd.unique(cell_obs[sample_col].dropna())
+        sample_metadata = []
+        sample_counts = []
+
+        for sample in samples:
+            sample_mask = cell_obs[sample_col].eq(sample).to_numpy()
+            sample_obs = cell_obs.loc[sample_mask]
+            row = {sample_col: str(sample)}
+
+            for column in [group_col, *covariates]:
+                values = sample_obs[column].dropna()
+                if values.empty:
+                    raise ValueError(f"{column!r} is missing for sample {sample!r}.")
+                if column in continuous_covariates:
+                    numeric_values = pd.to_numeric(values, errors="coerce")
+                    if numeric_values.isna().any():
+                        raise ValueError(f"Continuous covariate {column!r} must be numeric.")
+                    row[column] = float(numeric_values.mean())
+                else:
+                    levels = values.astype(str).unique()
+                    if len(levels) != 1:
+                        raise ValueError(
+                            f"{column!r} must have one value per sample; "
+                            f"sample {sample!r} has {len(levels)}."
+                        )
+                    row[column] = levels[0]
+
+            summed_counts = np.asarray(cell_counts[sample_mask].sum(axis=0)).ravel()
+            sample_counts.append(summed_counts.astype(np.int64))
+            sample_metadata.append(row)
+
+        metadata = pd.DataFrame(sample_metadata).set_index(sample_col)
+        groups = metadata[group_col].dropna().unique().tolist()
+        if len(groups) != 2:
+            list_ignored.append(cell)
+            continue
+
+        test_group, reference_group = contrast or (groups[0], groups[1])
+        if test_group not in groups or reference_group not in groups or test_group == reference_group:
+            raise ValueError(
+                f"contrast must name the two observed {group_col!r} groups: {groups}."
+            )
+
+        metadata[group_col] = pd.Categorical(
+            metadata[group_col], categories=[reference_group, test_group]
+        )
+        sample_group_counts = metadata[group_col].value_counts()
+        if (sample_group_counts.reindex([reference_group, test_group], fill_value=0)
+                < min_samples_per_group).any():
+            list_ignored.append(cell)
+            continue
+
+        model_covariates = []
+        categorical_covariates = []
+        for column in covariates:
+            if column in continuous_covariates:
+                sd = metadata[column].std(ddof=0)
+                if not np.isfinite(sd) or sd == 0:
+                    warnings.warn(f"Skipping constant covariate {column!r}.", stacklevel=2)
+                    continue
+                metadata[column] = (metadata[column] - metadata[column].mean()) / sd
+            else:
+                if metadata[column].nunique() < 2:
+                    warnings.warn(f"Skipping constant covariate {column!r}.", stacklevel=2)
+                    continue
+                metadata[column] = metadata[column].astype("category")
+                categorical_covariates.append(column)
+            model_covariates.append(column)
+
+        design_columns = [group_col, *model_covariates]
+        design_frame = pd.get_dummies(
+            metadata[design_columns],
+            columns=[group_col, *categorical_covariates],
+            drop_first=True,
+            dtype=float,
+        )
+        design_matrix = np.column_stack(
+            [np.ones(len(design_frame)), design_frame.to_numpy(dtype=float)]
+        )
+        if np.linalg.matrix_rank(design_matrix) < design_matrix.shape[1]:
+            raise ValueError(
+                f"The design for cell type {cell!r} is rank-deficient. "
+                "Check for confounded or redundant covariates."
+            )
+
+        design_formula = "~ " + " + ".join([*model_covariates, group_col])
+        counts = pd.DataFrame(
+            np.vstack(sample_counts),
+            index=metadata.index,
+            columns=adata.var_names,
+        )
+        keep_genes = (counts > 0).sum(axis=0) >= 2
+        counts = counts.loc[:, keep_genes]
+        if counts.shape[1] == 0:
+            list_ignored.append(cell)
+            continue
+
+        dds = DeseqDataSet(
+            counts=counts,
+            metadata=metadata,
+            design=design_formula,
+            quiet=True,
+        )
+        dds.deseq2()
+        stat_res = DeseqStats(
+            dds,
+            n_cpus=2,
+            contrast=(group_col, test_group, reference_group),
+        )
+        stat_res.summary()
+        de = stat_res.results_df
+
+        if filters_bool:
+            de_filter = de[
+                (abs(de['log2FoldChange']) > filters_dict['logfoldchanges'])
+                & (de['padj'] < filters_dict['padj'])
+            ]
+            ddf_filter.append(de_filter)
+
+        ddf.append(de)
+        list_celltypes_sheet.append(cell)
+        clear_output()
+
+    if ddf:
+        ddf = prot_name_annot(ddf)
+        output_dir = f"{dir_processed}/{name_dir}/analysis/foldchanges_DeSeq2/{cluster_to_use}"
+        os.makedirs(output_dir, exist_ok=True)
+
+        output_path = f'{output_dir}/DEG_DeSeq2_celltype_no-filter.xlsx'
+        with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+            for cell, result in zip(list_celltypes_sheet, ddf):
+                result.to_excel(writer, sheet_name=str(cell)[:31], index=True)
+
+        if filters_bool:
+            output_path = f'{output_dir}/DEG_DeSeq2_celltype_filter.xlsx'
+            with pd.ExcelWriter(output_path, engine='xlsxwriter') as writer:
+                for cell, result in zip(list_celltypes_sheet, ddf_filter):
+                    result.to_excel(writer, sheet_name=str(cell)[:31], index=True)
+
+    clear_output()
+    print('Analysis Done')
+    print(f'{len(ddf)} analyzed.')
+    print(f'{len(list_ignored)} ignored.')
+
+    return ddf, ddf_filter, list_celltypes_sheet
+
 def deseq2_one_condition(adata:sc.AnnData,
                          name_dir:str,
                          cluster_to_use: str,
@@ -1015,21 +1222,18 @@ def deseq2_one_condition(adata:sc.AnnData,
 
     groups = adata.obs[group_col].unique()
 
-    for idx, cell in enumerate(list_celltypes):  ### With replicates 
+    for idx, cell in enumerate(list_celltypes):
         print(cell, idx+1, "/", len(list_celltypes))
         adata_sub = adata[adata.obs[cluster_to_use]==cell]
         if len(adata_sub.obs[group_col].unique()) == 1:
             list_celltypes_sheet = np.delete(list_celltypes_sheet, np.where(list_celltypes_sheet == cell))
             list_ignored.append(cell)
             continue
-        
-        pbs = [] 
+
+        pbs = []
         for sample in adata_sub.obs['sample'].unique():
             print(sample)
             samp_adata_sub = adata_sub[adata_sub.obs['sample']==sample]
-            
-
-
             samp_adata_sub.X = samp_adata_sub.layers['counts']
 
             random.seed(20150201)
@@ -1038,56 +1242,66 @@ def deseq2_one_condition(adata:sc.AnnData,
             indices = np.array_split(np.array(indices), pseudoreplicates)
 
             for i, pseudo_rep in enumerate(indices):
-
-                rep_adata = sc.AnnData(X = samp_adata_sub[indices[i]].X.sum(axis=0),
-                                    var = samp_adata_sub[indices[i]].var[[]])
-                
+                rep_adata = sc.AnnData(
+                    X=samp_adata_sub[indices[i]].X.sum(axis=0),
+                    var=samp_adata_sub.var[[]],
+                )
                 rep_adata.obs_names = [sample + '_' + str(i)]
                 rep_adata.obs[group_col] = samp_adata_sub.obs[group_col].iloc[0]
                 rep_adata.obs['replicate'] = i
-
                 pbs.append(rep_adata)
 
         pb = sc.concat(pbs)
-        counts = pd.DataFrame(pb.X, columns = pb.var_names)
-        dds = DeseqDataSet(counts = counts,
-                    metadata = pb.obs,
-                    design_factors = [group_col],
-                    quiet = True)
-        sc.pp.filter_genes(dds, min_cells = 1)
+        counts = pd.DataFrame(pb.X, columns=pb.var_names)
+        dds = DeseqDataSet(
+            counts=counts,
+            metadata=pb.obs,
+            design_factors=[group_col],
+            quiet=True,
+        )
+        sc.pp.filter_genes(dds, min_cells=1)
         dds.deseq2()
-        stat_res = DeseqStats(dds, n_cpus = 32, contrast = (group_col,groups[0],groups[1]))
+        stat_res = DeseqStats(
+            dds,
+            n_cpus=32,
+            contrast=(group_col, groups[0], groups[1]),
+        )
 
-        stat_res.summary() 
+        stat_res.summary()
         de = stat_res.results_df
-        
+
         if filters_bool:
-            de_filter = de[(abs(de['log2FoldChange'])>filters_dict['logfoldchanges']) &
-                        (de['padj']<filters_dict['padj'])
-                        ]
+            de_filter = de[
+                (abs(de['log2FoldChange']) > filters_dict['logfoldchanges'])
+                & (de['padj'] < filters_dict['padj'])
+            ]
             ddf_filter.append(de_filter)
-        
+
         ddf.append(de)
         clear_output()
 
-    ddf = prot_name_annot(ddf) 
+    ddf = prot_name_annot(ddf)
 
-    if not os.path.exists(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"):
-        os.makedirs(f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}")
+    output_dir = f"{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
 
-    writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter')
+    writer = pd.ExcelWriter(
+        f'{output_dir}/DEG_DeSeq2_celltype_no-filter.xlsx', engine='xlsxwriter'
+    )
     for j in range(len(list_celltypes_sheet)):
         ddf[j].to_excel(writer, sheet_name=list_celltypes_sheet[j], index=True)
     writer.close()
 
     if filters_bool:
-        writer = pd.ExcelWriter(f'{dir_processed}/analysis/{name_dir}/foldchanges_DeSeq2/{cluster_to_use}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter')
+        writer = pd.ExcelWriter(
+            f'{output_dir}/DEG_DeSeq2_celltype_filter.xlsx', engine='xlsxwriter'
+        )
         for j in range(len(list_celltypes_sheet)):
             ddf_filter[j].to_excel(writer, sheet_name=list_celltypes_sheet[j], index=True)
         writer.close()
-    
-    clear_output()
 
+    clear_output()
     print('Analysis Done')
     print(f'{len(ddf)} analyzed.')
     print(f'{len(list_ignored)} ignored.')

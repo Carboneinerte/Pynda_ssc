@@ -141,7 +141,7 @@ def mmc_merge(adata: sc.AnnData,
               name_dir: str
               ):
     '''
-    Merge MMC correlation mapping from {dir_processed}/Correlation_Mapping/ folder
+    Merge MMC correlation mapping from {dir_processed}/{name_dir}/Correlation_Mapping/ folder
     MMC files names should start with {name_dir} 
     adata : AnnData object
     dir_processed : string
@@ -169,7 +169,7 @@ def mmc_merge(adata: sc.AnnData,
         mmc_dict_class = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:class_name']))
         mmc_dict_subclass = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:subclass_name']))
         mmc_dict_supertype = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:supertype_name']))
-        if "mmc:class_correlation_coefficient" in MMC_output.colums:
+        if "mmc:class_correlation_coefficient" in MMC_output.columns:
             mmc_dict_classcoef = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:class_correlation_coefficient']))
         elif "mmc:subclass_bootstrapping_probability" in MMC_output.columns:
             mmc_dict_classcoef = dict(zip(MMC_output['mmc:cell_id'], MMC_output['mmc:subclass_bootstrapping_probability']))
